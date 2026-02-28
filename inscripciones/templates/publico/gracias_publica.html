@@ -1,0 +1,55 @@
+{% extends 'publico/base_publica.html' %}
+
+{% block title %}¡Inscripción Exitosa! — Hasta lo Último de la Tierra{% endblock %}
+
+{% block content %}
+<div class="bg-hut py-8 sm:py-10 text-center">
+    <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight px-4">
+        Hasta lo Último de la Tierra
+    </h1>
+</div>
+
+<div class="min-h-[60vh] flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-lg text-center">
+        <div class="mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 animate-bounce">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-black text-gray-900 mb-3">
+            ¡Inscripción Exitosa!
+        </h2>
+        <p class="text-gray-600 text-lg mb-2">
+            Tu inscripción fue registrada correctamente.
+        </p>
+        <p class="text-gray-500 text-sm mb-10">
+            Gracias por inscribirte en Hasta lo Último de la Tierra.<br>
+            Nos pondremos en contacto contigo pronto.
+        </p>
+
+        <div class="bg-white rounded-2xl p-5 mb-8 max-w-sm mx-auto shadow-sm border border-gray-100">
+            <div class="flex items-center gap-4 text-left">
+                <div class="w-12 h-12 rounded-xl bg-hut/10 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-hut-dark" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold text-gray-900">Revisá tu email</p>
+                    <p class="text-xs text-gray-500">Te enviaremos información importante por correo.</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="{% url 'inscripcion_crear' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold text-white bg-hut hover:bg-hut-dark rounded-xl transition-all duration-200 shadow-md">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Inscribir otra persona
+        </a>
+    </div>
+</div>
+{% endblock %}
