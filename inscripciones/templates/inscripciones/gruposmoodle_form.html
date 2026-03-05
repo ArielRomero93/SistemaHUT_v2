@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar Grupo{% else %}Nuevo Grupo{% endif %} — Sistema HUT{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: rgba(129, 169, 164, 0.05);
+        border: 1px solid rgba(129, 169, 164, 0.2);
+        border-radius: 0.5rem;
+        color: #e5e7eb;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+    .form-input:focus {
+        outline: none;
+        border-color: rgba(129, 169, 164, 0.6);
+        box-shadow: 0 0 0 2px rgba(129, 169, 164, 0.2);
+    }
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #9ca3af;
+    }
+    .help-text {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <a href="{% url 'grupos_lista' %}" class="text-sm flex items-center gap-1 text-hut-300 hover:text-hut-200 mb-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            Volver
+        </a>
+        <h1 class="text-2xl font-bold text-white">{% if object %}Editar Grupo Moodle{% else %}Nuevo Grupo Moodle{% endif %}</h1>
+    </div>
+
+    <div class="glass-card rounded-xl p-6 sm:p-8">
+        <form method="post" action="" class="space-y-6">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="p-4 rounded-lg bg-red-400/10 border border-red-400/20 text-red-400 text-sm">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="form-label" for="{{ form.nombre.id_for_label }}">Nombre del Grupo</label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}<div class="text-xs text-red-400 mt-1">{{ form.nombre.errors.0 }}</div>{% endif %}
+                </div>
+                <div>
+                    <label class="form-label" for="{{ form.curso.id_for_label }}">Curso HUT</label>
+                    {{ form.curso }}
+                    {% if form.curso.errors %}<div class="text-xs text-red-400 mt-1">{{ form.curso.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                    <label class="form-label" for="{{ form.dia.id_for_label }}">Día</label>
+                    {{ form.dia }}
+                    {% if form.dia.errors %}<div class="text-xs text-red-400 mt-1">{{ form.dia.errors.0 }}</div>{% endif %}
+                </div>
+                <div>
+                    <label class="form-label" for="{{ form.horario.id_for_label }}">Horario</label>
+                    {{ form.horario }}
+                    {% if form.horario.errors %}<div class="text-xs text-red-400 mt-1">{{ form.horario.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label class="form-label" for="{{ form.tutor.id_for_label }}">Tutor</label>
+                    {{ form.tutor }}
+                    {% if form.tutor.errors %}<div class="text-xs text-red-400 mt-1">{{ form.tutor.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <div class="pt-4 mt-6 border-t border-hut-300/10 flex justify-end gap-3">
+                <a href="{% url 'grupos_lista' %}" class="px-5 py-2.5 text-sm font-medium text-gray-300 rounded-lg hover:bg-hut-300/10 transition-colors">Cancelar</a>
+                <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-hut-400 to-hut-600 rounded-lg hover:from-hut-300 hover:to-hut-500 shadow-lg shadow-hut-300/20 transition-all">
+                    Guardar Grupo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

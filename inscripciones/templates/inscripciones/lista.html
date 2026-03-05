@@ -206,6 +206,7 @@
         <div class="nav-links">
             {% if user.is_authenticated %}
                 <a href="{% url 'inscripcion_lista' %}" class="nav-link">Inscripciones</a>
+                <a href="{% url 'grupos_lista' %}" class="nav-link">Grupos</a>
                 <a href="{% url 'inscripcion_crear' %}" class="btn-primary" style="padding:7px 16px;">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                     Nueva

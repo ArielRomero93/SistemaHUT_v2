@@ -6,8 +6,11 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from .models import FormularioInscripcionHUT, ProvinciaEstado, CursoHUT
-from .forms import InscripcionForm
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from .models import FormularioInscripcionHUT, ProvinciaEstado, CursoHUT, GruposMoodle
+from .forms import InscripcionForm, GruposMoodleForm
 from .envio_mail import enviar_confirmacion_inscripcion
 
 
@@ -129,3 +132,59 @@ def exportar_csv_moodle(request):
     )
     response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
     return response
+
+
+# ==============================================================================
+# GRUPOS MOODLE CRUD
+# ==============================================================================
+
+class GruposMoodleListView(LoginRequiredMixin, ListView):
+    model = GruposMoodle
+    template_name = 'inscripciones/gruposmoodle_list.html'
+    context_object_name = 'grupos'
+    paginate_by = 15
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('curso')
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(
+                Q(nombre__icontains=q) |
+                Q(tutor__icontains=q) |
+                Q(dia__icontains=q)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')
+        return context
+
+class GruposMoodleCreateView(LoginRequiredMixin, CreateView):
+    model = GruposMoodle
+    form_class = GruposMoodleForm
+    template_name = 'inscripciones/gruposmoodle_form.html'
+    success_url = reverse_lazy('grupos_lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Grupo creado correctamente.')
+        return super().form_valid(form)
+
+class GruposMoodleUpdateView(LoginRequiredMixin, UpdateView):
+    model = GruposMoodle
+    form_class = GruposMoodleForm
+    template_name = 'inscripciones/gruposmoodle_form.html'
+    success_url = reverse_lazy('grupos_lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Grupo actualizado correctamente.')
+        return super().form_valid(form)
+
+class GruposMoodleDeleteView(LoginRequiredMixin, DeleteView):
+    model = GruposMoodle
+    template_name = 'inscripciones/gruposmoodle_confirm_delete.html'
+    success_url = reverse_lazy('grupos_lista')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Grupo eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)

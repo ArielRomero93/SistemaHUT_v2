@@ -1,5 +1,5 @@
 from django import forms
-from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT
+from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle
 
 INPUT_CLASS = (
     'form-input'
@@ -151,3 +151,31 @@ class InscripcionForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class GruposMoodleForm(forms.ModelForm):
+    class Meta:
+        model = GruposMoodle
+        fields = ['nombre', 'curso', 'horario', 'dia', 'tutor']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Ej: Grupo 1',
+            }),
+            'curso': forms.Select(attrs={
+                'class': SELECT_CLASS,
+            }),
+            'horario': forms.TextInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Ej: 19:00 a 21:00 hs',
+            }),
+            'dia': forms.TextInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Ej: Jueves',
+            }),
+            'tutor': forms.TextInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Ej: Juan Pérez',
+            }),
+        }
+
