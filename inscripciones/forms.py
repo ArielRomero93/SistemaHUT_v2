@@ -156,7 +156,7 @@ class InscripcionForm(forms.ModelForm):
 class GruposMoodleForm(forms.ModelForm):
     class Meta:
         model = GruposMoodle
-        fields = ['nombre', 'curso', 'horario', 'dia', 'tutor']
+        fields = ['nombre', 'curso', 'horario', 'dia', 'tutor', 'capacidad']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': INPUT_CLASS,
@@ -169,13 +169,90 @@ class GruposMoodleForm(forms.ModelForm):
                 'class': INPUT_CLASS,
                 'placeholder': 'Ej: 19:00 a 21:00 hs',
             }),
-            'dia': forms.TextInput(attrs={
-                'class': INPUT_CLASS,
-                'placeholder': 'Ej: Jueves',
+            'dia': forms.Select(attrs={
+                'class': SELECT_CLASS,
             }),
             'tutor': forms.TextInput(attrs={
                 'class': INPUT_CLASS,
                 'placeholder': 'Ej: Juan Pérez',
             }),
+            'capacidad': forms.NumberInput(attrs={
+                'class': INPUT_CLASS,
+                'min': '1',
+            }),
         }
+
+class InscriptoLoginForm(forms.Form):
+    codigo_acceso = forms.CharField(
+        label='Código Único de Acceso',
+        widget=forms.TextInput(attrs={
+            'class': INPUT_CLASS,
+            'placeholder': 'Ej: HUT-8XJ92',
+        })
+    )
+    email = forms.EmailField(
+        label='Correo Electrónico',
+        widget=forms.EmailInput(attrs={
+            'class': INPUT_CLASS,
+            'placeholder': 'correo@ejemplo.com',
+        })
+    )
+
+class SeleccionGrupoForm(forms.ModelForm):
+    class Meta:
+        model = FormularioInscripcionHUT
+        fields = ['grupo']
+        widgets = {
+            'grupo': forms.Select(attrs={
+                'class': SELECT_CLASS,
+            })
+        }
+        labels = {
+            'grupo': 'Selecciona tu Grupo Moodle'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['grupo'].required = True
+        self.fields['grupo'].error_messages = {'required': 'Debes seleccionar un grupo para continuar.'}
+        if self.instance and self.instance.pk:
+            # Usar siempre el curso activo globalmente para mostrar los grupos disponibles
+            curso_activo = CursoHUT.objects.filter(activo=True).first()
+            if not curso_activo:
+                curso_activo = self.instance.curso
+
+            # Filter groups that belong to the active course and have available capacity
+            from django.db.models import F, Q
+            
+            if self.instance.grupo_id:
+                grupos_disponibles = GruposMoodle.objects.filter(
+                    Q(curso=curso_activo, participantes__lt=F('capacidad')) |
+                    Q(id=self.instance.grupo_id)
+                )
+            else:
+                grupos_disponibles = GruposMoodle.objects.filter(
+                    curso=curso_activo,
+                    participantes__lt=F('capacidad')
+                )
+            
+            self.fields['grupo'].queryset = grupos_disponibles
+            self.fields['grupo'].empty_label = "Elige un grupo disponible..."
+            self.fields['grupo'].label_from_instance = lambda obj: f"{obj.nombre} ({obj.dia} {obj.horario}) - {obj.capacidad - obj.participantes} vacantes"
+
+    def clean_grupo(self):
+        grupo = self.cleaned_data.get('grupo')
+        if not grupo:
+            raise forms.ValidationError("Debes seleccionar un grupo para continuar.")
+            
+        grupo.refresh_from_db()
+        if grupo.participantes >= grupo.capacidad:
+            raise forms.ValidationError("Este grupo ya está lleno. Por favor, elige otro.")
+        return grupo
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+        return instance
+
 

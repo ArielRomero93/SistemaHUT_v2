@@ -86,6 +86,11 @@
                     {{ form.tutor }}
                     {% if form.tutor.errors %}<div class="text-xs text-red-400 mt-1">{{ form.tutor.errors.0 }}</div>{% endif %}
                 </div>
+                <div>
+                    <label class="form-label" for="{{ form.capacidad.id_for_label }}">Capacidad (Participantes)</label>
+                    {{ form.capacidad }}
+                    {% if form.capacidad.errors %}<div class="text-xs text-red-400 mt-1">{{ form.capacidad.errors.0 }}</div>{% endif %}
+                </div>
             </div>
 
             <div class="pt-4 mt-6 border-t border-hut-300/10 flex justify-end gap-3">

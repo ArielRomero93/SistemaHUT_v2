@@ -1,0 +1,26 @@
+{% extends 'publico/base_publica.html' %}
+{% load static %}
+
+{% block title %}¡Grupo Seleccionado! — HUT{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-10 px-4 flex justify-center items-center">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden p-8 text-center">
+        
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </div>
+
+        <h1 class="text-3xl font-black tracking-tight text-gray-900 mb-2">¡Felicitaciones!</h1>
+        <p class="text-gray-600 font-medium mb-8">
+            Has asegurado tu lugar en el grupo Moodle exitosamente.
+        </p>
+
+        <a href="https://hut.mailchimpsites.com/" class="inline-block w-full bg-hut-darker text-white font-bold py-4 px-6 rounded-2xl hover:bg-hut-dark transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-hut-darker/30">
+            Volver al inicio
+        </a>
+    </div>
+</div>
+{% endblock %}

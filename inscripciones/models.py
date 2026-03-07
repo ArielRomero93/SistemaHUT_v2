@@ -120,13 +120,25 @@ def get_curso_activo():
     return curso.pk if curso else None
 
 class GruposMoodle(models.Model):
+    DIAS_SEMANA = [
+        ('Lunes', 'Lunes'),
+        ('Martes', 'Martes'),
+        ('Miércoles', 'Miércoles'),
+        ('Jueves', 'Jueves'),
+        ('Viernes', 'Viernes'),
+        ('Sábado', 'Sábado'),
+        ('Domingo', 'Domingo'),
+    ]
     nombre = models.CharField(max_length=100, verbose_name='Nombre del Grupo')
     curso = models.ForeignKey(CursoHUT, on_delete=models.PROTECT, verbose_name='Curso HUT')
     horario = models.CharField(max_length=100, verbose_name='Horario')
-    dia = models.CharField(max_length=100, verbose_name='Día')
+    dia = models.CharField(max_length=15, choices=DIAS_SEMANA, verbose_name='Día')
     tutor = models.CharField(max_length=100, verbose_name='Tutor')
+    capacidad = models.IntegerField(default=8, verbose_name='Capacidad')
+    participantes = models.IntegerField(default=0, verbose_name='Participantes')
     fecha_creacion = models.DateTimeField(default=timezone.now, editable=False)
-
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+    fecha_baja = models.DateTimeField(blank=True, null=True)
     def __str__(self):
         return self.nombre
 
@@ -182,6 +194,7 @@ class FormularioInscripcionHUT(models.Model):
     fecha_abandono = models.DateTimeField(blank=True, null=True)
     fecha_finalizacion = models.DateField(blank=True, null=True)
     grupo = models.ForeignKey(GruposMoodle, on_delete=models.PROTECT, verbose_name='Grupo Moodle', blank=True, null=True)
+    codigo_acceso = models.CharField(max_length=8, unique=True, null=True, blank=True, help_text="Código único para que el alumno acceda a su panel")
 
     def __str__(self):
         return f"{self.nombre} {self.apellido}"
@@ -324,3 +337,48 @@ class Voluntario(models.Model):
     class Meta:
         verbose_name = 'Voluntario'
         verbose_name_plural = 'Voluntarios'
+
+from django.db.models.signals import post_save, post_delete, pre_save
+from django.dispatch import receiver
+
+def recalcular_participantes_grupo(grupo):
+    if grupo:
+        # Recuento real de inscripciones asociadas
+        grupo.participantes = FormularioInscripcionHUT.objects.filter(grupo=grupo).count()
+        grupo.save(update_fields=['participantes'])
+
+def generar_codigo_unico():
+    import random
+    import string
+    while True:
+        random_chars = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+        codigo = f"HUT-{random_chars}"
+        if not FormularioInscripcionHUT.objects.filter(codigo_acceso=codigo).exists():
+            return codigo
+
+@receiver(pre_save, sender=FormularioInscripcionHUT)
+def operaciones_pre_save_inscripcion(sender, instance, **kwargs):
+    if not instance.codigo_acceso:
+        instance.codigo_acceso = generar_codigo_unico()
+
+    if instance.pk:
+        try:
+            viejo = FormularioInscripcionHUT.objects.get(pk=instance.pk)
+            # Guardamos temporalmente el grupo viejo en la instancia si ha cambiado
+            if viejo.grupo != instance.grupo:
+                instance._grupo_viejo = viejo.grupo
+        except FormularioInscripcionHUT.DoesNotExist:
+            pass
+
+@receiver(post_save, sender=FormularioInscripcionHUT)
+def actualizar_grupo_al_guardar(sender, instance, created, **kwargs):
+    recalcular_participantes_grupo(instance.grupo)
+
+    # Si cambió de grupo, recalculamos el viejo
+    if hasattr(instance, '_grupo_viejo') and instance._grupo_viejo:
+        recalcular_participantes_grupo(instance._grupo_viejo)
+
+@receiver(post_delete, sender=FormularioInscripcionHUT)
+def actualizar_grupo_al_eliminar(sender, instance, **kwargs):
+    recalcular_participantes_grupo(instance.grupo)
+

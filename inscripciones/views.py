@@ -10,7 +10,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .models import FormularioInscripcionHUT, ProvinciaEstado, CursoHUT, GruposMoodle
-from .forms import InscripcionForm, GruposMoodleForm
+from .forms import InscripcionForm, GruposMoodleForm, InscriptoLoginForm, SeleccionGrupoForm
 from .envio_mail import enviar_confirmacion_inscripcion
 
 
@@ -158,6 +158,10 @@ class GruposMoodleListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['query'] = self.request.GET.get('q', '')
+        for grupo in context['grupos']:
+            # Usar el campo participantes directamente del modelo GrupoMoodle,
+            # el cual ya se mantiene sincronizado mediante las señales pre_save y post_save.
+            grupo.cantidad_inscriptos = grupo.participantes
         return context
 
 class GruposMoodleCreateView(LoginRequiredMixin, CreateView):
@@ -188,3 +192,55 @@ class GruposMoodleDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Grupo eliminado correctamente.')
         return super().delete(request, *args, **kwargs)
+
+# ==============================================================================
+# FLUJO DE SELECCIÓN DE GRUPO (PÚBLICO)
+# ==============================================================================
+
+def inscripto_login_view(request):
+    """Vista pública para que el inscripto ingrese su Código Único y Email."""
+    if request.method == 'POST':
+        form = InscriptoLoginForm(request.POST)
+        if form.is_valid():
+            codigo_acceso = form.cleaned_data['codigo_acceso'].strip()
+            email = form.cleaned_data['email'].strip()
+
+            try:
+                inscripcion = FormularioInscripcionHUT.objects.get(codigo_acceso__iexact=codigo_acceso, email__iexact=email)
+                request.session['inscripto_id'] = inscripcion.id
+                return redirect('inscripto_seleccionar_grupo')
+            except FormularioInscripcionHUT.DoesNotExist:
+                messages.error(request, 'No se encontró ninguna inscripción con esa combinación de Código y Correo Electrónico.')
+    else:
+        form = InscriptoLoginForm()
+    
+    return render(request, 'publico/login_inscripto.html', {'form': form})
+
+def inscripto_seleccion_grupo_view(request):
+    """Vista pública donde el inscripto elige su grupo de la lista disponible."""
+    inscripto_id = request.session.get('inscripto_id')
+    if not inscripto_id:
+        return redirect('inscripto_login')
+
+    try:
+        inscripcion = FormularioInscripcionHUT.objects.get(id=inscripto_id)
+    except FormularioInscripcionHUT.DoesNotExist:
+        del request.session['inscripto_id']
+        return redirect('inscripto_login')
+
+    if request.method == 'POST':
+        form = SeleccionGrupoForm(request.POST, instance=inscripcion)
+        if form.is_valid():
+            form.save()
+            # Limpiar sesión después de éxito
+            if 'inscripto_id' in request.session:
+                del request.session['inscripto_id']
+            return redirect('inscripto_grupo_exito')
+    else:
+        form = SeleccionGrupoForm(instance=inscripcion)
+
+    return render(request, 'publico/seleccionar_grupo.html', {'form': form, 'inscripcion': inscripcion})
+
+def inscripto_grupo_exito_view(request):
+    """Vista de éxito tras elegir grupo."""
+    return render(request, 'publico/exito_grupo.html')

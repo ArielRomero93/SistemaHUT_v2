@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; color: #333333; line-height: 1.6;">
+    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eeeeee; border-radius: 8px;">
+        <h2 style="color: #3D6B67;">¡Hola {{ inscripcion.nombre }}!</h2>
+        <p>Te escribimos desde el equipo de Hasta lo Último de la Tierra para acercarte una actualización importante sobre tu inscripción para el curso.</p>
+        
+        <p>Hemos mejorado nuestro sistema para que elegir y modificar tu <strong>Grupo Moodle</strong> sea más sencillo y seguro. A partir de ahora, ya no utilizarás tu ID de inscripción para acceder, sino que contarás con un <strong>Código de Acceso Único</strong> personalizado.</p>
+
+        <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 25px 0; text-align: center; border: 2px solid #81A9A4;">
+            <p style="margin: 0; font-size: 14px; color: #555555; text-transform: uppercase; font-weight: bold;">Tu Código de Acceso Único es:</p>
+            <p style="margin: 10px 0 0 0; font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #111827;">{{ codigo_acceso }}</p>
+        </div>
+
+        <p>Para seleccionar el grupo al que te gustaría unirte (o para cambiarlo, si ya habías elegido uno), simplemente haz clic en el siguiente enlace al sistema de inscripciones:</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ link_acceso }}" style="background-color: #3d6b67; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Seleccionar Mi Horario</a>
+        </div>
+
+        <p>El sistema te pedirá ingresar tu correo electrónico (al que recibiste este mensaje) junto con tu nuevo código único.</p>
+
+        <p style="margin-top: 30px; font-size: 12px; color: #888888;">
+            Atte.<br>
+            <strong>Fronteras — Hasta lo Último de la Tierra</strong>
+        </p>
+    </div>
+</body>
+</html>

@@ -63,21 +63,24 @@
                                     <td style="background-color: #f0f7f6; border: 1px solid #d1e3e0; border-radius: 12px; padding: 20px;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
-                                                <td style="width: 44px; vertical-align: top; padding-right: 14px;">
+                                                <td style="width: 44px; vertical-align: middle; padding-right: 14px;">
                                                     <div style="width: 40px; height: 40px; background-color: #81A9A4; border-radius: 10px; text-align: center; line-height: 40px;">
-                                                        <span style="font-size: 20px;">📩</span>
+                                                        <span style="font-size: 20px;">🔑</span>
                                                     </div>
                                                 </td>
-                                                <td style="vertical-align: top;">
+                                                <td style="vertical-align: middle;">
                                                     <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #5e8a85;">
-                                                        Próximo paso
+                                                        Tu Código de Acceso Único es:
                                                     </p>
-                                                    <p style="margin: 0; font-size: 14px; line-height: 22px; color: #4b5563;">
-                                                        En el transcurso de la semana te estará llegando un mail donde deberás <strong style="color: #374151;">elegir un grupo</strong> para confirmar tu inscripción.
+                                                    <p style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px; color: #111827;">
+                                                        {{ codigo_acceso }}
                                                     </p>
                                                 </td>
                                             </tr>
                                         </table>
+                                        <div style="margin-top: 20px; text-align: center;">
+                                            <a href="{{ link_acceso }}" style="background-color: #3d6b67; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Seleccionar Mi Grupo / Horario</a>
+                                        </div>
                                     </td>
                                 </tr>
                             </table>
@@ -87,16 +90,16 @@
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td style="width: 44px; vertical-align: top; padding-right: 14px;">
-                                                    <div style="width: 40px; height: 40px; background-color: #ECE8D9; border-radius: 10px; text-align: center; line-height: 40px;">
-                                                        <span style="font-size: 20px;">👀</span>
+                                                    <div style="width: 40px; height: 40px; background-color: #fde68a; border-radius: 10px; text-align: center; line-height: 40px;">
+                                                        <span style="font-size: 20px;">⬆️</span>
                                                     </div>
                                                 </td>
                                                 <td style="vertical-align: top;">
-                                                    <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #92791e;">
-                                                        Estáte atento/a
+                                                    <p style="margin: 0 0 4px 0; font-size: 15px; font-weight: 900; color: #b45309; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                        ¡Súper Importante!
                                                     </p>
                                                     <p style="margin: 0; font-size: 14px; line-height: 22px; color: #4b5563;">
-                                                        Revisá tu bandeja de entrada (y la carpeta de spam) en los próximos días.
+                                                        Por favor, ingresá al enlace de arriba y elegí entre uno de los grupos disponibles.
                                                     </p>
                                                 </td>
                                             </tr>

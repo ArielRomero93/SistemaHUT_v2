@@ -8,9 +8,14 @@ urlpatterns = [
     path('api/provincias/<int:pais_id>/', views.get_provincias, name='get_provincias'),
     path('exportar-moodle/', views.exportar_csv_moodle, name='exportar_csv_moodle'),
 
-    # Grupos Moodle
+    # Grupos Moodle (Admin)
     path('grupos/', views.GruposMoodleListView.as_view(), name='grupos_lista'),
     path('grupos/nuevo/', views.GruposMoodleCreateView.as_view(), name='grupos_crear'),
     path('grupos/editar/<int:pk>/', views.GruposMoodleUpdateView.as_view(), name='grupos_editar'),
     path('grupos/eliminar/<int:pk>/', views.GruposMoodleDeleteView.as_view(), name='grupos_eliminar'),
+
+    # Elección de Grupo Moodle (Público)
+    path('mi-grupo/', views.inscripto_login_view, name='inscripto_login'),
+    path('mi-grupo/seleccionar/', views.inscripto_seleccion_grupo_view, name='inscripto_seleccionar_grupo'),
+    path('mi-grupo/exito/', views.inscripto_grupo_exito_view, name='inscripto_grupo_exito'),
 ]

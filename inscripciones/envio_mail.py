@@ -12,9 +12,17 @@ def enviar_confirmacion_inscripcion(inscripcion):
     Recibe la instancia del modelo FormularioInscripcionHUT recién guardada.
     """
     try:
+        # Todo: Reemplazar host temporal con variable real
+        host = 'http://127.0.0.1:8000' 
+        link_acceso = f"{host}/inscripciones/mi-grupo/"
+        
         html_body = render_to_string(
             'inscripciones/confirmacion_inscripcion.html',
-            {'inscripcion': inscripcion},
+            {
+                'inscripcion': inscripcion,
+                'codigo_acceso': inscripcion.codigo_acceso,
+                'link_acceso': link_acceso
+            },
         )
 
         email = EmailMessage(

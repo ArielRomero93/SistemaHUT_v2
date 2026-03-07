@@ -1,0 +1,75 @@
+{% extends 'publico/base_publica.html' %}
+{% load static %}
+
+{% block title %}Ingresar — Elección de Grupo HUT{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-10 px-4 flex justify-center items-center">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl overflow-hidden">
+        
+        <div class="bg-hut-darker px-8 py-10 text-center relative overflow-hidden">
+            <h1 class="text-3xl font-black tracking-tight text-white mb-2 relative z-10">Elegí tu Grupo</h1>
+            <p class="text-hut-100 text-sm font-medium relative z-10">Ingresa tus datos de inscripción</p>
+        </div>
+
+        <div class="p-8">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="mb-6 p-4 rounded-xl {% if message.tags == 'error' %}bg-red-50 border border-red-100 text-red-700{% else %}bg-green-50 border border-green-100 text-green-700{% endif %} text-sm">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" action="" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2" for="{{ form.codigo_acceso.id_for_label }}">
+                        {{ form.codigo_acceso.label }}
+                    </label>
+                    {{ form.codigo_acceso }}
+                    {% if form.codigo_acceso.errors %}
+                        <p class="mt-1 text-sm text-red-600 font-medium">{{ form.codigo_acceso.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2" for="{{ form.email.id_for_label }}">
+                        {{ form.email.label }}
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="mt-1 text-sm text-red-600 font-medium">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-hut-darker text-white font-bold py-4 px-6 rounded-2xl hover:bg-hut-dark transition-all transform hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-hut-darker/30">
+                        Ingresar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-input {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background-color: #f9fafb;
+        border: 2px solid #f3f4f6;
+        border-radius: 1rem;
+        font-size: 1rem;
+        color: #111827;
+        transition: all 0.2s;
+    }
+    .form-input:focus {
+        outline: none;
+        background-color: white;
+        border-color: #81A9A4;
+        box-shadow: 0 0 0 4px rgba(129, 169, 164, 0.1);
+    }
+</style>
+{% endblock %}
