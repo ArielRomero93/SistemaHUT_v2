@@ -1,24 +1,36 @@
-# Python
+### Python ###
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
-*.egg-info/
-*.egg
+*.pyd
 
-# Virtual Environment
+### Entornos Virtuales ###
 venv/
 .venv/
 env/
+ENV/
 
-# IDE
+### Django ###
+# No subir la base de datos local
+db.sqlite3
+db.sqlite3-journal
+
+# No subir archivos multimedia
+media/
+
+# Archivos de entorno y configuraciones
+.env
+.env.local
+local_settings.py
+
+### Herramientas / IDEs ###
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Gemini
+### Gemini ###
 .gemini/

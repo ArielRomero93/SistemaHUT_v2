@@ -1,0 +1,51 @@
+### Python ###
+# Archivos compilados y de caché
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+### Entornos Virtuales ###
+venv/
+.venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+
+### Django ###
+# No subir NUNCA la base de datos local
+db.sqlite3
+db.sqlite3-journal
+
+# No subir archivos multimedia que suben los usuarios localmente
+media/
+# (Opcional) Si usas collectstatic en producción, también podrías ignorar static/
+# static/
+
+# Configuraciones locales y variables de entorno (contraseñas, secret keys)
+.env
+.env.local
+local_settings.py
+
+### Herramientas / IDEs ###
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+### Gemini / Herramientas IA ###
+.gemini/
+
+### Logs y otros temporales ###
+*.log
+*.pot
+*.mo
