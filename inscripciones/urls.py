@@ -3,10 +3,17 @@ from . import views
 
 urlpatterns = [
     path('', views.inscripcion_lista, name='inscripcion_lista'),
-    path('formularioInscripcionHut/', views.inscripcion_crear, name='inscripcion_crear'),
+    
+    # --- INSCRIPCIONES ABIERTAS ---
+    #path('formularioInscripcionHut/', views.inscripcion_crear, name='inscripcion_crear'),
+
+    # --- INSCRIPCIONES CERRADAS (Descomentar la línea de abajo y comentar la de arriba cuando cierren) ---
+    path('formularioInscripcionHut/', views.inscripciones_cerradas, name='inscripcion_crear'),
+    
     path('gracias/', views.inscripcion_gracias, name='inscripcion_gracias'),
     path('api/provincias/<int:pais_id>/', views.get_provincias, name='get_provincias'),
     path('exportar-moodle/', views.exportar_csv_moodle, name='exportar_csv_moodle'),
+    path('exportar-completo/', views.exportar_csv_completo, name='exportar_csv_completo'),
 
     # Grupos Moodle (Admin)
     path('grupos/', views.GruposMoodleListView.as_view(), name='grupos_lista'),

@@ -80,12 +80,20 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                     <label class="form-label" for="{{ form.tutor.id_for_label }}">Tutor</label>
                     {{ form.tutor }}
                     {% if form.tutor.errors %}<div class="text-xs text-red-400 mt-1">{{ form.tutor.errors.0 }}</div>{% endif %}
                 </div>
+                <div>
+                    <label class="form-label" for="{{ form.url_whatsapp.id_for_label }}">URL WhatsApp</label>
+                    {{ form.url_whatsapp }}
+                    {% if form.url_whatsapp.errors %}<div class="text-xs text-red-400 mt-1">{{ form.url_whatsapp.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                     <label class="form-label" for="{{ form.capacidad.id_for_label }}">Capacidad (Participantes)</label>
                     {{ form.capacidad }}

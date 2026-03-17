@@ -156,7 +156,7 @@ class InscripcionForm(forms.ModelForm):
 class GruposMoodleForm(forms.ModelForm):
     class Meta:
         model = GruposMoodle
-        fields = ['nombre', 'curso', 'horario', 'dia', 'tutor', 'capacidad']
+        fields = ['nombre', 'curso', 'horario', 'dia', 'tutor', 'url_whatsapp', 'capacidad']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': INPUT_CLASS,
@@ -175,6 +175,10 @@ class GruposMoodleForm(forms.ModelForm):
             'tutor': forms.TextInput(attrs={
                 'class': INPUT_CLASS,
                 'placeholder': 'Ej: Juan Pérez',
+            }),
+            'url_whatsapp': forms.URLInput(attrs={
+                'class': INPUT_CLASS,
+                'placeholder': 'Ej: https://chat.whatsapp.com/...',
             }),
             'capacidad': forms.NumberInput(attrs={
                 'class': INPUT_CLASS,

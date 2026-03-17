@@ -61,6 +61,11 @@ def inscripcion_gracias(request):
     return render(request, 'publico/gracias_publica.html')
 
 
+def inscripciones_cerradas(request):
+    """Página que se muestra cuando las inscripciones están cerradas (pública)."""
+    return render(request, 'publico/inscripciones_cerradas.html')
+
+
 def get_provincias(request, pais_id):
     """API JSON: devuelve provincias filtradas por país (para AJAX)."""
     provincias = ProvinciaEstado.objects.filter(idPais_id=pais_id).order_by('provinciaNombre')
@@ -125,6 +130,100 @@ def exportar_csv_moodle(request):
     buffer.seek(0)
 
     nombre_archivo = f'MOODLE_{curso_nombre}_{fecha}.xlsx'
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+    return response
+
+@login_required
+def exportar_csv_completo(request):
+    """Exporta TODAS las inscripciones (filtradas o no) a un archivo XLSX con todos los datos."""
+    import io
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    # Aplicamos la misma lógica de búsqueda que en la lista
+    query = request.GET.get('q', '').strip()
+    inscripciones = FormularioInscripcionHUT.objects.select_related('pais', 'provincia', 'curso', 'grupo').all()
+
+    if query:
+        inscripciones = inscripciones.filter(
+            Q(nombre__icontains=query) |
+            Q(apellido__icontains=query) |
+            Q(email__icontains=query) |
+            Q(congregacion__icontains=query) |
+            Q(ciudad__icontains=query) |
+            Q(pastor__icontains=query)
+        )
+        
+    fecha = datetime.now().strftime('%Y%m%d_%H%M')
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Inscripciones Completas'
+
+    # Estilos para el header
+    header_font = Font(bold=True, color='FFFFFF', size=11)
+    header_fill = PatternFill(start_color='1F4744', end_color='1F4744', fill_type='solid')
+    header_align = Alignment(horizontal='center', vertical='center')
+
+    headers = [
+        'ID', 'Fecha Inscripción', 'Curso', 'Nombre', 'Apellido', 'Email', 'Teléfono', 
+        'Edad', 'Estado Civil', 'País', 'Provincia', 'Ciudad', 'Congregación', 
+        'Pastor', 'Estado', 'Código Acceso', 'Grupo Asignado'
+    ]
+    
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_align
+
+    # Datos
+    for row, i in enumerate(inscripciones, 2):
+        # Determinar estado
+        estado = "Activo"
+        if i.abandonado:
+            estado = "Abandonado"
+        elif i.fecha_finalizacion:
+            estado = "Finalizado"
+
+        grupo_nombre = i.grupo.nombre if i.grupo else "Sin asignar"
+        curso_nombre = i.curso.nombre if i.curso else ""
+        fecha_str = i.fecha_creacion.strftime('%d/%m/%Y %H:%M') if i.fecha_creacion else ""
+
+        ws.cell(row=row, column=1, value=i.id)
+        ws.cell(row=row, column=2, value=fecha_str)
+        ws.cell(row=row, column=3, value=curso_nombre)
+        ws.cell(row=row, column=4, value=i.nombre)
+        ws.cell(row=row, column=5, value=i.apellido)
+        ws.cell(row=row, column=6, value=i.email)
+        ws.cell(row=row, column=7, value=i.telefono)
+        ws.cell(row=row, column=8, value=i.edad)
+        ws.cell(row=row, column=9, value=i.estadoCivil)
+        ws.cell(row=row, column=10, value=i.pais.paisNombre if i.pais else "")
+        ws.cell(row=row, column=11, value=i.provincia.provinciaNombre if i.provincia else "")
+        ws.cell(row=row, column=12, value=i.ciudad)
+        ws.cell(row=row, column=13, value=i.congregacion)
+        ws.cell(row=row, column=14, value=i.pastor)
+        ws.cell(row=row, column=15, value=estado)
+        ws.cell(row=row, column=16, value=i.codigo_acceso)
+        ws.cell(row=row, column=17, value=grupo_nombre)
+
+    # Auto-ancho de columnas
+    for col in ws.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 40) # Limitar ancho maximo a 40 para que no sea inmenso
+
+    # Guardar en memoria
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+
+    nombre_archivo = f'InscripcionesHUT_Completas_{fecha}.xlsx'
 
     response = HttpResponse(
         buffer.getvalue(),
@@ -232,6 +331,11 @@ def inscripto_seleccion_grupo_view(request):
         form = SeleccionGrupoForm(request.POST, instance=inscripcion)
         if form.is_valid():
             form.save()
+            
+            # Enviar email con el link del grupo
+            from .envio_mail import enviar_confirmacion_grupo
+            enviar_confirmacion_grupo(inscripcion, inscripcion.grupo)
+            
             # Limpiar sesión después de éxito
             if 'inscripto_id' in request.session:
                 del request.session['inscripto_id']

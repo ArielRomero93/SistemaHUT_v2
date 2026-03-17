@@ -134,6 +134,7 @@ class GruposMoodle(models.Model):
     horario = models.CharField(max_length=100, verbose_name='Horario')
     dia = models.CharField(max_length=15, choices=DIAS_SEMANA, verbose_name='Día')
     tutor = models.CharField(max_length=100, verbose_name='Tutor')
+    url_whatsapp = models.URLField(max_length=200, blank=True, null=True, verbose_name='URL WhatsApp')
     capacidad = models.IntegerField(default=8, verbose_name='Capacidad')
     participantes = models.IntegerField(default=0, verbose_name='Participantes')
     fecha_creacion = models.DateTimeField(default=timezone.now, editable=False)
@@ -343,7 +344,6 @@ from django.dispatch import receiver
 
 def recalcular_participantes_grupo(grupo):
     if grupo:
-        # Recuento real de inscripciones asociadas
         grupo.participantes = FormularioInscripcionHUT.objects.filter(grupo=grupo).count()
         grupo.save(update_fields=['participantes'])
 

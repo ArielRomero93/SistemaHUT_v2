@@ -1,0 +1,56 @@
+{% extends 'publico/base_publica.html' %}
+{% load static %}
+
+{% block title %}Inscripciones Cerradas — HUT{% endblock %}
+
+{% block content %}
+<div class="min-h-screen py-10 px-4 flex justify-center items-center bg-gray-50/50">
+    <!-- Contenedor principal: Ancho en desktop (max-w-4xl) y flex-row, en mobile colapsa a columna -->
+    <div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl flex flex-col md:flex-row">
+        
+        <!-- Panel Izquierdo (o superior en mobile) -->
+        <div class="md:w-5/12 bg-hut-darker p-8 md:p-12 flex flex-col justify-center text-center relative overflow-hidden group">
+            <!-- Background pattern/decoration -->
+            <div class="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9IiNmZmYiLz48L3N2Zz4=')]"></div>
+            
+            <div class="relative z-10 flex justify-center mb-6">
+                <div class="bg-white/10 p-4 rounded-full backdrop-blur-sm border border-white/20 transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                    <svg class="w-14 h-14 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight text-white mb-4 relative z-10 leading-tight">Inscripciones Cerradas</h1>
+            <p class="text-hut-100 text-sm md:text-base font-medium relative z-10 px-2 opacity-90">El periodo de registro actual ha finalizado temporalmente</p>
+        </div>
+
+        <!-- Panel Derecho (o inferior en mobile) -->
+        <div class="md:w-7/12 p-8 md:p-12 flex flex-col justify-center space-y-8">
+            <div class="bg-amber-50 rounded-2xl p-6 border border-amber-100 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-amber-200/50 transform rotate-12">
+                    <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm0-9a1 1 0 011 1v2a1 1 0 11-2 0V8a1 1 0 011-1zm0 5a1 1 0 110 2 1 1 0 010-2z"/></svg>
+                </div>
+                
+                <h2 class="text-lg font-bold text-amber-900 mb-2 relative z-10">¡Cupos Completos!</h2>
+                <p class="text-amber-800/80 text-sm leading-relaxed relative z-10">
+                    Te agradecemos mucho el interés en participar. Por el momento no hay vacantes disponibles o el formulario de inscripción se encuentra cerrado.
+                </p>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100">
+                <p class="text-gray-500 text-sm mb-6 font-medium">
+                    Te invitamos a mantenerte al tanto de nuestras redes y sitio oficial para enterarte de futuras aperturas.
+                </p>
+                
+                <a href="https://hut.mailchimpsites.com/" target="_blank" class="inline-flex items-center justify-center w-full bg-white text-hut-darker border-2 border-hut-darker font-bold py-4 px-6 rounded-2xl hover:bg-hut-darker hover:text-white transition-all duration-300 transform hover:-translate-y-0.5 shadow-sm hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-hut-darker/20">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Ir al Sitio Oficial
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
