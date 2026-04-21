@@ -332,25 +332,28 @@
         /* --- MEDIA QUERY PARA DISPOSITIVOS MÓVILES Y TABLETS --- */
         @media (max-width: 768px) {
             body {
-                padding: 0.5rem;
+                padding: 0.25rem;
             }
             .form-container {
-                padding: 1.5rem 1rem;
-                margin: 0.5rem auto;
-                border-radius: 12px;
+                padding: 1.25rem 0.75rem;
+                margin: 0.25rem auto;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            }
+            h2.main-title {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+                line-height: 1.3;
             }
             fieldset {
-            border: 2px solid var(--color-borde);
-            padding: 2rem 1.75rem;
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 1.75rem;
-            margin-bottom: 2rem;
-            background: #fff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            transition: border-color 0.3s;
-        }
+                padding: 1.25rem 1rem;
+                gap: 1.25rem;
+                margin-bottom: 1.25rem;
+            }
+            legend {
+                font-size: 1.1rem;
+                padding: 0.4rem 1rem;
+            }
             .grid-columns {
                 grid-template-columns: 1fr;
                 gap: 1.25rem;
@@ -358,31 +361,41 @@
             .areas-interes-grid {
                 grid-template-columns: 1fr;
             }
-            h2.main-title {
-            text-align: center;
-            color: var(--color-principal);
-            margin-bottom: 2.5rem;
-            font-weight: 800;
-            font-size: 2.5rem;
-            letter-spacing: -0.05em;
-        }
-            input, select, textarea {
+            label {
+                font-size: 1rem;
+            }
+            input[type="text"],
+            input[type="email"],
+            input[type="date"],
+            input[type="tel"],
+            select,
+            textarea {
                 font-size: 16px; /* Evita el zoom automático en iOS */
+                padding: 0.85rem 1rem;
+            }
+            .area-checkbox-item {
+                padding: 1rem;
+            }
+            .area-checkbox-item span {
+                font-size: 1rem;
+            }
+            .terminos-container {
+                padding: 1.25rem;
+                font-size: 0.95rem;
+                line-height: 1.6;
+            }
+            .terminos-container p {
+                word-break: break-word;
             }
             button[type="submit"] {
-            background-color: var(--color-principal);
-            color: white;
-            padding: 1.2rem 3.5rem;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1.25rem;
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px -1px rgba(129, 169, 164, 0.3), 0 2px 4px -1px rgba(129, 169, 164, 0.15);
-        }
+                width: 100%;
+                padding: 1.1rem;
+                font-size: 1.1rem;
+                border-radius: 12px;
+            }
+            input[type="file"] {
+                font-size: 0.95rem;
+            }
         }
     </style>
 </head>
