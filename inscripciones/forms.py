@@ -1,5 +1,5 @@
 from django import forms
-from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle
+from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Voluntario
 
 INPUT_CLASS = (
     'form-input'
@@ -259,4 +259,12 @@ class SeleccionGrupoForm(forms.ModelForm):
             instance.save()
         return instance
 
+class VoluntarioForm(forms.ModelForm):
+    class Meta:
+        model = Voluntario
+        fields = '__all__'
+        widgets = {
+            'areas_interes': forms.CheckboxSelectMultiple(),
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
 

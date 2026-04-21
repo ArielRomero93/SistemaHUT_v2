@@ -10,7 +10,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from .models import FormularioInscripcionHUT, ProvinciaEstado, CursoHUT, GruposMoodle
-from .forms import InscripcionForm, GruposMoodleForm, InscriptoLoginForm, SeleccionGrupoForm
+from .forms import InscripcionForm, GruposMoodleForm, InscriptoLoginForm, SeleccionGrupoForm, VoluntarioForm
 from .envio_mail import enviar_confirmacion_inscripcion
 
 
@@ -87,6 +87,7 @@ def exportar_csv_moodle(request):
 
     inscripciones = (
         FormularioInscripcionHUT.objects
+        .select_related('grupo')
         .filter(curso=curso_activo)
         .order_by('apellido', 'nombre')
     )
@@ -103,7 +104,7 @@ def exportar_csv_moodle(request):
     header_fill = PatternFill(start_color='3D6B67', end_color='3D6B67', fill_type='solid')
     header_align = Alignment(horizontal='center')
 
-    headers = ['username', 'firstname', 'lastname', 'email', 'course1', 'role1']
+    headers = ['username', 'firstname', 'lastname', 'email', 'course1', 'role1', 'group1']
     for col, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col, value=header)
         cell.font = header_font
@@ -112,12 +113,14 @@ def exportar_csv_moodle(request):
 
     # Datos
     for row, i in enumerate(inscripciones, 2):
+        grupo_nombre = i.grupo.nombre if i.grupo else ""
         ws.cell(row=row, column=1, value=i.email)
         ws.cell(row=row, column=2, value=i.nombre)
         ws.cell(row=row, column=3, value=i.apellido)
         ws.cell(row=row, column=4, value=i.email)
         ws.cell(row=row, column=5, value=curso_nombre)
         ws.cell(row=row, column=6, value='student')
+        ws.cell(row=row, column=7, value=grupo_nombre)
 
     # Auto-ancho de columnas
     for col in ws.columns:
@@ -348,3 +351,34 @@ def inscripto_seleccion_grupo_view(request):
 def inscripto_grupo_exito_view(request):
     """Vista de éxito tras elegir grupo."""
     return render(request, 'publico/exito_grupo.html')
+
+# ==============================================================================
+# FORMULARIO VOLUNTARIOS (PÚBLICO)
+# ==============================================================================
+
+def formulario_voluntario_crear(request):
+    """Formulario público para registrar un Voluntario."""
+    from .models import TerminosCondiciones
+    import json
+
+    if request.method == 'POST':
+        form = VoluntarioForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('formulario_voluntario_gracias')
+    else:
+        form = VoluntarioForm()
+
+    # Cargar términos y condiciones desde la base de datos
+    terminos_qs = TerminosCondiciones.objects.all()
+    terminos_dict = {t.rol: t.texto_html for t in terminos_qs}
+    terminos_json = json.dumps(terminos_dict)
+
+    return render(request, 'publico/formulario_voluntario.html', {
+        'form': form,
+        'terminos_json': terminos_json,
+    })
+
+def formulario_voluntario_gracias(request):
+    """Página de agradecimiento post-inscripción de voluntarios."""
+    return render(request, 'publico/gracias_voluntario.html')

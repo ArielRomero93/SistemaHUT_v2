@@ -25,4 +25,8 @@ urlpatterns = [
     path('mi-grupo/', views.inscripto_login_view, name='inscripto_login'),
     path('mi-grupo/seleccionar/', views.inscripto_seleccion_grupo_view, name='inscripto_seleccionar_grupo'),
     path('mi-grupo/exito/', views.inscripto_grupo_exito_view, name='inscripto_grupo_exito'),
+
+    # Voluntarios (Público)
+    path('aspirantes/', views.formulario_voluntario_crear, name='formulario_voluntario_crear'),
+    path('aspirantes/gracias/', views.formulario_voluntario_gracias, name='formulario_voluntario_gracias'),
 ]

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulario de Voluntario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* --- VARIABLES DE COLOR Y CONFIGURACIÓN BASE --- */
+        :root {
+            --color-principal: #81A9A4;
+            --color-secundario: #f0f5f4;
+            --color-borde: #b8ccca; /* Un poquitito mas oscuro que #d3e0dd para mejor contraste sin perder el estilo */
+            --color-texto: #333333;
+            --color-hover: #678b86;
+            --color-error: #d93025;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--color-secundario);
+            padding: 1rem;
+            color: var(--color-texto);
+            line-height: 1.6;
+            font-size: 1.15rem;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL DEL FORMULARIO --- */
+        .form-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        h2.main-title {
+            text-align: center;
+            color: var(--color-principal);
+            margin-bottom: 2.5rem;
+            font-weight: 800;
+            font-size: 2.5rem;
+            letter-spacing: -0.05em;
+        }
+
+        /* --- ESTRUCTURA DEL FORMULARIO Y COLUMNAS --- */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        fieldset {
+            border: 2px solid var(--color-borde);
+            padding: 2rem 1.75rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            margin-bottom: 2rem;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: border-color 0.3s;
+        }
+
+        fieldset:hover {
+            border-color: var(--color-principal);
+        }
+
+        legend {
+            padding: 0.6rem 1.5rem;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: var(--color-principal);
+            background: var(--color-secundario);
+            border-radius: 30px;
+            border: 2px solid var(--color-borde);
+            letter-spacing: 0.03em;
+        }
+
+        .grid-columns {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        /* --- ESTILOS DE CAMPOS (INPUTS, LABELS, ETC) --- */
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            color: #4b5563;
+            font-size: 1.1rem;
+            letter-spacing: 0.025em;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--color-borde);
+            border-radius: 0.5rem;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #1f2937;
+            background-color: #f9fafb;
+            transition: all 0.2s ease;
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        /* Custom flecha para selectores */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 3rem;
+            cursor: pointer;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            background-color: #fff;
+            border-color: var(--color-principal);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(129, 169, 164, 0.25);
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .error-message {
+            color: var(--color-error);
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 6px;
+        }
+
+        .field-hint {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        /* --- CHECKBOXES PERSONALIZADOS PARA ÁREAS DE INTERÉS --- */
+        .areas-interes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .area-checkbox-item {
+            background-color: #ffffff;
+            border: 2px solid var(--color-borde);
+            border-radius: 8px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .area-checkbox-item:hover {
+            border-color: var(--color-principal);
+            transform: translateY(-2px);
+        }
+        
+        .area-checkbox-item:focus-within {
+            outline: 3px solid var(--color-principal);
+            outline-offset: 2px;
+        }
+
+        .area-checkbox-item input[type="checkbox"] {
+            /* El checkbox real está oculto pero funcional */
+            flex-shrink: 0;
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+        }
+
+        .area-checkbox-item .custom-checkbox {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--color-borde);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .area-checkbox-item span {
+            flex-grow: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .area-checkbox-item input[type="checkbox"]:checked + .custom-checkbox {
+            background-color: var(--color-principal);
+            border-color: var(--color-principal);
+            color: white;
+        }
+
+        .area-checkbox-item input[type="checkbox"]:checked + .custom-checkbox::before {
+            content: '✔';
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .area-checkbox-item input[type="checkbox"]:checked ~ span {
+            color: var(--color-principal);
+            font-weight: 800;
+        }
+
+        /* --- SECCIÓN DE TÉRMINOS Y BOTÓN DE ENVÍO --- */
+        .terminos-container {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            background-color: #eaf1f0;
+            padding: 2rem;
+            border-left: 6px solid var(--color-principal);
+            border-radius: 8px;
+            margin: 2rem auto;
+            max-width: 1000px;
+            color: var(--color-texto);
+        }
+
+        .terminos-container p {
+            margin-bottom: 1em;
+        }
+
+        .terminos-container strong {
+            color: var(--color-texto);
+            font-weight: 700;
+        }
+
+        #submit-wrapper {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        button[type="submit"] {
+            background-color: var(--color-principal);
+            color: white;
+            padding: 1.2rem 3.5rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(129, 169, 164, 0.3), 0 2px 4px -1px rgba(129, 169, 164, 0.15);
+        }
+
+        button[type="submit"]:hover:not(:disabled) {
+            background-color: var(--color-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(129, 169, 164, 0.4), 0 4px 6px -2px rgba(129, 169, 164, 0.2);
+        }
+
+        button[type="submit"]:focus-visible {
+            outline: 3px solid var(--color-principal);
+            outline-offset: 4px;
+        }
+
+        button[type="submit"]:disabled {
+            background-color: #e2e8f0;
+            color: #64748b;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            border: 2px solid #cbd5e1;
+        }
+
+        .oculto {
+            display: none !important;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        input[type="file"] {
+            padding: 1rem;
+            background-color: #ffffff;
+            border: 2px dashed var(--color-borde);
+            border-radius: 8px;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        /* --- MEDIA QUERY PARA DISPOSITIVOS MÓVILES Y TABLETS --- */
+        @media (max-width: 768px) {
+            body {
+                padding: 0.5rem;
+            }
+            .form-container {
+                padding: 1.5rem 1rem;
+                margin: 0.5rem auto;
+                border-radius: 12px;
+            }
+            fieldset {
+            border: 2px solid var(--color-borde);
+            padding: 2rem 1.75rem;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            margin-bottom: 2rem;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: border-color 0.3s;
+        }
+            .grid-columns {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+            .areas-interes-grid {
+                grid-template-columns: 1fr;
+            }
+            h2.main-title {
+            text-align: center;
+            color: var(--color-principal);
+            margin-bottom: 2.5rem;
+            font-weight: 800;
+            font-size: 2.5rem;
+            letter-spacing: -0.05em;
+        }
+            input, select, textarea {
+                font-size: 16px; /* Evita el zoom automático en iOS */
+            }
+            button[type="submit"] {
+            background-color: var(--color-principal);
+            color: white;
+            padding: 1.2rem 3.5rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(129, 169, 164, 0.3), 0 2px 4px -1px rgba(129, 169, 164, 0.15);
+        }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <h2 class="main-title">Formulario de Candidatos, Voluntariado e Interesados</h2>
+
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <fieldset>
+                <legend>Datos Personales</legend>
+                <div class="grid-columns">
+                    <div class="form-group">
+                        <label for="id_nombre">Nombre Completo</label>
+                        <input type="text" name="nombre" id="id_nombre" required value="{{ form.nombre.value|default_if_none:'' }}" autocomplete="name">
+                        {% if form.nombre.errors %}<div class="error-message">{{ form.nombre.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_apellido">Apellido</label>
+                        <input type="text" name="apellido" id="id_apellido" required value="{{ form.apellido.value|default_if_none:'' }}" autocomplete="family-name">
+                        {% if form.apellido.errors %}<div class="error-message">{{ form.apellido.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_email">Email</label>
+                        <input type="email" name="email" id="id_email" required value="{{ form.email.value|default_if_none:'' }}" autocomplete="email">
+                        {% if form.email.errors %}<div class="error-message">{{ form.email.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_telefono">Número de Whatsapp</label>
+                        <input type="text" name="telefono" id="id_telefono" required value="{{ form.telefono.value|default_if_none:'' }}" autocomplete="tel" placeholder="+54 9 11 12345678">
+                        <span class="field-hint">Incluir código de país y área.</span>
+                        {% if form.telefono.errors %}<div class="error-message">{{ form.telefono.errors }}</div>{% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="id_fecha_nacimiento">Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" id="id_fecha_nacimiento" required value="{{ form.fecha_nacimiento.value|stringformat:'Y-m-d' }}" autocomplete="bday">
+                        {% if form.fecha_nacimiento.errors %}<div class="error-message">{{ form.fecha_nacimiento.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_con_quien_convive">¿Con quién convive?</label>
+                        <input type="text" name="con_quien_convive" id="id_con_quien_convive" required value="{{ form.con_quien_convive.value|default_if_none:'' }}">
+                        {% if form.con_quien_convive.errors %}<div class="error-message">{{ form.con_quien_convive.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_hijos">¿Tienes hijos?</label>
+                        <select name="hijos" id="id_hijos">
+                            <option value="NO" {% if form.hijos.value == "NO" %}selected{% endif %}>No</option>
+                            <option value="SI" {% if form.hijos.value == "SI" %}selected{% endif %}>Sí</option>
+                        </select>
+                        {% if form.hijos.errors %}<div class="error-message">{{ form.hijos.errors }}</div>{% endif %}
+                    </div>
+                    <div id="div_hijos_fechas" class="form-group oculto">
+                        <label for="id_fechas_nacimiento_hijos">Nombres y fechas de nacimiento de sus hijos</label>
+                        <textarea name="fechas_nacimiento_hijos" id="id_fechas_nacimiento_hijos" rows="2" placeholder="Ej: Juan (10-02-2015)">{{ form.fechas_nacimiento_hijos.value|default_if_none:'' }}</textarea>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Ubicación</legend>
+                <div class="grid-columns">
+                    <div class="form-group">
+                        <label for="id_pais_origen">País de origen</label>
+                        <input type="text" name="pais_origen" id="id_pais_origen" required value="{{ form.pais_origen.value|default_if_none:'' }}" autocomplete="country-name">
+                        {% if form.pais_origen.errors %}<div class="error-message">{{ form.pais_origen.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_pais_residencia">País de residencia</label>
+                        <input type="text" name="pais_residencia" id="id_pais_residencia" required value="{{ form.pais_residencia.value|default_if_none:'' }}" autocomplete="country">
+                        {% if form.pais_residencia.errors %}<div class="error-message">{{ form.pais_residencia.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_provincia_residencia">Provincia/Estado de residencia</label>
+                        <input type="text" name="provincia_residencia" id="id_provincia_residencia" required value="{{ form.provincia_residencia.value|default_if_none:'' }}" autocomplete="address-level1">
+                        {% if form.provincia_residencia.errors %}<div class="error-message">{{ form.provincia_residencia.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_localidad">Localidad actual</label>
+                        <input type="text" name="localidad" id="id_localidad" required value="{{ form.localidad.value|default_if_none:'' }}" autocomplete="address-level2">
+                        {% if form.localidad.errors %}<div class="error-message">{{ form.localidad.errors }}</div>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_barrio">Barrio (Opcional)</label>
+                        <input type="text" name="barrio" id="id_barrio" value="{{ form.barrio.value|default_if_none:'' }}">
+                        {% if form.barrio.errors %}<div class="error-message">{{ form.barrio.errors }}</div>{% endif %}
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Información Eclesiástica y Experiencia</legend>
+                
+                <div class="grid-columns">
+                    <div class="form-group">
+                        <label for="id_rol_agencia">Rol dentro de la agencia</label>
+                        <select name="rol_agencia" id="id_rol_agencia">
+                            <option value="" {% if not form.rol_agencia.value %}selected{% endif %}>Seleccione...</option>
+                            <option value="CANDIDATO" {% if form.rol_agencia.value == "CANDIDATO" %}selected{% endif %}>Candidato</option>
+                            <option value="VOLUNTARIO" {% if form.rol_agencia.value == "VOLUNTARIO" %}selected{% endif %}>Voluntario</option>
+                            <option value="INTERESADO" {% if form.rol_agencia.value == "INTERESADO" %}selected{% endif %}>Interesado</option>
+                        </select>
+                        {% if form.rol_agencia.errors %}<div class="error-message">{{ form.rol_agencia.errors }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_miembro_iglesia">¿Es miembro activo de una iglesia?</label>
+                    <select name="miembro_iglesia" id="id_miembro_iglesia">
+                        <option value="" {% if not form.miembro_iglesia.value %}selected{% endif %}>Seleccione una opción</option>
+                        <option value="SI" {% if form.miembro_iglesia.value == "SI" %}selected{% endif %}>Sí</option>
+                        <option value="NO" {% if form.miembro_iglesia.value == "NO" %}selected{% endif %}>No</option>
+                    </select>
+                    {% if form.miembro_iglesia.errors %}<div class="error-message">{{ form.miembro_iglesia.errors }}</div>{% endif %}
+                </div>
+
+                <div id="div_info_iglesia" class="oculto" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div class="form-group"><label for="id_cual_iglesia">Nombre de la iglesia</label><input type="text" name="cual_iglesia" id="id_cual_iglesia" value="{{ form.cual_iglesia.value|default_if_none:'' }}"></div>
+                    <div class="form-group"><label for="id_tiempo_asistiendo">¿Hace cuánto asiste?</label><input type="text" name="tiempo_asistiendo" id="id_tiempo_asistiendo" value="{{ form.tiempo_asistiendo.value|default_if_none:'' }}"></div>
+                    <div class="form-group"><label for="id_nombre_pastor">Nombre de su pastor/a</label><input type="text" name="nombre_pastor" id="id_nombre_pastor" value="{{ form.nombre_pastor.value|default_if_none:'' }}"></div>
+                    <div class="form-group"><label for="id_telefono_pastor">Teléfono de su pastor/a</label><input type="text" name="telefono_pastor" id="id_telefono_pastor" value="{{ form.telefono_pastor.value|default_if_none:'' }}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_sirve_en_iglesia">¿Está involucrado/a en un área de servicio en su iglesia?</label>
+                    <select name="sirve_en_iglesia" id="id_sirve_en_iglesia">
+                        <option value="" {% if not form.sirve_en_iglesia.value %}selected{% endif %}>Seleccione una opción</option>
+                        <option value="SI" {% if form.sirve_en_iglesia.value == "SI" %}selected{% endif %}>Sí</option>
+                        <option value="NO" {% if form.sirve_en_iglesia.value == "NO" %}selected{% endif %}>No</option>
+                    </select>
+                    {% if form.sirve_en_iglesia.errors %}<div class="error-message">{{ form.sirve_en_iglesia.errors }}</div>{% endif %}
+                </div>
+                <div id="div_cual_servicio" class="form-group oculto"><label for="id_cual_servicio">¿En qué área de servicio?</label><input type="text" name="cual_servicio" id="id_cual_servicio" value="{{ form.cual_servicio.value|default_if_none:'' }}"></div>
+
+                <div class="form-group">
+                    <label for="id_voluntario_otra_org">¿Fue voluntario en otra organización?</label>
+                    <select name="voluntario_otra_org" id="id_voluntario_otra_org">
+                         <option value="" {% if not form.voluntario_otra_org.value %}selected{% endif %}>Seleccione una opción</option>
+                        <option value="SI" {% if form.voluntario_otra_org.value == "SI" %}selected{% endif %}>Sí</option>
+                        <option value="NO" {% if form.voluntario_otra_org.value == "NO" %}selected{% endif %}>No</option>
+                    </select>
+                    {% if form.voluntario_otra_org.errors %}<div class="error-message">{{ form.voluntario_otra_org.errors }}</div>{% endif %}
+                </div>
+                <div id="div_cual_org" class="form-group oculto"><label for="id_cual_org">¿Cuál organización?</label><input type="text" name="cual_org" id="id_cual_org" value="{{ form.cual_org.value|default_if_none:'' }}"></div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Formación y Habilidades</legend>
+                 <div class="grid-columns">
+                    <div class="form-group"><label for="id_hizo_hut">¿Realizó HUT?</label><select name="hizo_hut" id="id_hizo_hut"><option value="" {% if not form.hizo_hut.value %}selected{% endif %}>Seleccione...</option><option value="SI" {% if form.hizo_hut.value == "SI" %}selected{% endif %}>Sí</option><option value="TODAVIA_NO" {% if form.hizo_hut.value == "TODAVIA_NO" %}selected{% endif %}>Todavía no</option></select>{% if form.hizo_hut.errors %}<div class="error-message">{{ form.hizo_hut.errors }}</div>{% endif %}</div>
+                    <div id="div_hizo_hut_anio" class="form-group oculto"><label for="id_hizo_hut_anio">¿En qué año?</label><input type="text" name="hizo_hut_anio" id="id_hizo_hut_anio" value="{{ form.hizo_hut_anio.value|default_if_none:'' }}"></div>
+                    <div class="form-group"><label for="id_hizo_reacciona">¿Realizó Reacciona?</label><select name="hizo_reacciona" id="id_hizo_reacciona"><option value="" {% if not form.hizo_reacciona.value %}selected{% endif %}>Seleccione...</option><option value="SI" {% if form.hizo_reacciona.value == "SI" %}selected{% endif %}>Sí</option><option value="TODAVIA_NO" {% if form.hizo_reacciona.value == "TODAVIA_NO" %}selected{% endif %}>Todavía no</option></select>{% if form.hizo_reacciona.errors %}<div class="error-message">{{ form.hizo_reacciona.errors }}</div>{% endif %}</div>
+                    <div id="div_cuando_reacciona" class="form-group oculto"><label for="id_cuando_reacciona">¿Cuándo?</label><input type="text" name="cuando_reacciona" id="id_cuando_reacciona" value="{{ form.cuando_reacciona.value|default_if_none:'' }}"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_deseo_salir_campo">¿Tiene deseo de salir al campo misionero?</label>
+                    <select name="deseo_salir_campo" id="id_deseo_salir_campo">
+                        <option value="" {% if not form.deseo_salir_campo.value %}selected{% endif %}>Seleccione una opción</option>
+                        <option value="SI" {% if form.deseo_salir_campo.value == "SI" %}selected{% endif %}>Sí, a largo plazo</option>
+                        <option value="CORTO_PLAZO" {% if form.deseo_salir_campo.value == "CORTO_PLAZO" %}selected{% endif %}>Sí, por corto plazo</option>
+                        <option value="NO_POR_AHORA" {% if form.deseo_salir_campo.value == "NO_POR_AHORA" %}selected{% endif %}>No por ahora</option>
+                        <option value="NO" {% if form.deseo_salir_campo.value == "NO" %}selected{% endif %}>No</option>
+                    </select>
+                    {% if form.deseo_salir_campo.errors %}<div class="error-message">{{ form.deseo_salir_campo.errors }}</div>{% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_nivel_estudio">Nivel de estudio máximo alcanzado</label>
+                    <select name="nivel_estudio" id="id_nivel_estudio">
+                        <option value="" {% if not form.nivel_estudio.value %}selected{% endif %}>Seleccione una opción</option>
+                        <option value="PRIMARIA_COMPLETA" {% if form.nivel_estudio.value == "PRIMARIA_COMPLETA" %}selected{% endif %}>Primaria Completa</option>
+                        <option value="SECUNDARIA_INCOMPLETA" {% if form.nivel_estudio.value == "SECUNDARIA_INCOMPLETA" %}selected{% endif %}>Secundaria Incompleta</option>
+                        <option value="SECUNDARIA_COMPLETA" {% if form.nivel_estudio.value == "SECUNDARIA_COMPLETA" %}selected{% endif %}>Secundaria Completa</option>
+                        <option value="TERCIARIO_INCOMPLETO" {% if form.nivel_estudio.value == "TERCIARIO_INCOMPLETO" %}selected{% endif %}>Terciario Incompleto</option>
+                        <option value="TERCIARIO_COMPLETO" {% if form.nivel_estudio.value == "TERCIARIO_COMPLETO" %}selected{% endif %}>Terciario Completo</option>
+                        <option value="UNIVERSITARIO_INCOMPLETO" {% if form.nivel_estudio.value == "UNIVERSITARIO_INCOMPLETO" %}selected{% endif %}>Universitario Incompleto</option>
+                        <option value="UNIVERSITARIO_COMPLETO" {% if form.nivel_estudio.value == "UNIVERSITARIO_COMPLETO" %}selected{% endif %}>Universitario Completo</option>
+                    </select>
+                    {% if form.nivel_estudio.errors %}<div class="error-message">{{ form.nivel_estudio.errors }}</div>{% endif %}
+                </div>
+                <div id="div_titulo_universitario" class="form-group oculto"><label for="id_titulo_universitario">¿Qué título?</label><input type="text" name="titulo_universitario" id="id_titulo_universitario" value="{{ form.titulo_universitario.value|default_if_none:'' }}"></div>
+
+                <div class="form-group"><label for="id_cursos_formacion">Cursos de formación relevantes (Opcional)</label><textarea name="cursos_formacion" id="id_cursos_formacion" rows="4">{{ form.cursos_formacion.value|default_if_none:'' }}</textarea>{% if form.cursos_formacion.errors %}<div class="error-message">{{ form.cursos_formacion.errors }}</div>{% endif %}</div>
+                <div class="form-group"><label for="id_experiencia_profesional">Experiencia laboral breve (Opcional)</label><textarea name="experiencia_profesional" id="id_experiencia_profesional" rows="4">{{ form.experiencia_profesional.value|default_if_none:'' }}</textarea>{% if form.experiencia_profesional.errors %}<div class="error-message">{{ form.experiencia_profesional.errors }}</div>{% endif %}</div>
+
+                <div class="grid-columns">
+                    <div class="form-group">
+                        <label for="id_habla_idioma">¿Habla otro idioma?</label>
+                        <select name="habla_idioma" id="id_habla_idioma">
+                            <option value="" {% if not form.habla_idioma.value %}selected{% endif %}>Seleccione...</option>
+                            <option value="SI" {% if form.habla_idioma.value == "SI" %}selected{% endif %}>Sí</option>
+                            <option value="NO" {% if form.habla_idioma.value == "NO" %}selected{% endif %}>No</option>
+                        </select>
+                         {% if form.habla_idioma.errors %}<div class="error-message">{{ form.habla_idioma.errors }}</div>{% endif %}
+                    </div>
+                     <div id="div_cual_idioma" class="form-group oculto">
+                        <label for="id_cual_idioma">¿Cuál/es? (Nivel: Básico, Intermedio, etc.)</label>
+                        <input type="text" name="cual_idioma" id="id_cual_idioma" value="{{ form.cual_idioma.value|default_if_none:'' }}">
+                    </div>
+                 </div>
+                 <div class="form-group">
+                     <label for="id_lee_escribe_idioma">¿Lee y escribe fluidamente en otro idioma?</label>
+                     <select name="lee_escribe_idioma" id="id_lee_escribe_idioma">
+                         <option value="" {% if not form.lee_escribe_idioma.value %}selected{% endif %}>Seleccione...</option>
+                         <option value="SI" {% if form.lee_escribe_idioma.value == "SI" %}selected{% endif %}>Sí</option>
+                         <option value="NO" {% if form.lee_escribe_idioma.value == "NO" %}selected{% endif %}>No</option>
+                     </select>
+                     {% if form.lee_escribe_idioma.errors %}<div class="error-message">{{ form.lee_escribe_idioma.errors }}</div>{% endif %}
+                 </div>
+                 <div id="div_cual_idioma_lee_escribe" class="form-group oculto">
+                     <label for="id_cual_idioma_lee_escribe">¿Cuál/es?</label>
+                     <input type="text" name="cual_idioma_lee_escribe" id="id_cual_idioma_lee_escribe" value="{{ form.cual_idioma_lee_escribe.value|default_if_none:'' }}">
+                 </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Áreas de Interés</legend>
+                <div class="form-group">
+                    <label for="id_areas_interes">Seleccione al menos una (1) área donde le gustaría involucrarse.</label>
+                    {% if form.areas_interes.errors %}<div class="error-message">{{ form.areas_interes.errors }}</div>{% endif %}
+                    <div class="areas-interes-grid">
+                        {% for area in form.areas_interes %}
+                            <label class="area-checkbox-item">
+                                <!-- El tag original de django renderiza el div y class -->
+                                {{ area.tag }}
+                                <div class="custom-checkbox"></div>
+                                <span>{{ area.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                 <div id="div_otras_propuestas" class="form-group oculto"><label for="id_otras_propuestas">Describa brevemente su propuesta</label><textarea name="otras_propuestas" id="id_otras_propuestas" rows="3">{{ form.otras_propuestas.value|default_if_none:'' }}</textarea>{% if form.otras_propuestas.errors %}<div class="error-message">{{ form.otras_propuestas.errors }}</div>{% endif %}</div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Finalizar</legend>
+                <div class="form-group">
+                    <label for="id_foto_rostro">Cargue una foto de su rostro (formato .jpg o .png)</label>
+                    <input type="file" name="foto_rostro" id="id_foto_rostro" accept=".jpg,.jpeg,.png">
+                    {% if form.foto_rostro.errors %}
+                        <div class="error-message">{{ form.foto_rostro.errors }}</div>
+                    {% elif request.method == "POST" %}
+                        <div class="field-hint" style="color: #dd7a00;">Recuerde volver a subir la imagen si el formulario tiene errores.</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label style="display: flex; flex-direction: row; align-items: flex-start; gap: 1rem; cursor: pointer; padding: 1.25rem; background: #f9fafb; border: 2px solid var(--color-borde); border-radius: 8px; transition: background 0.2s;">
+                        <input type="checkbox" name="acepto_terminos" id="id_acepto_terminos" style="width: 1.5rem; height: 1.5rem; margin-top: 0.1rem; cursor: pointer; accent-color: var(--color-principal);">
+                        <span style="font-size: 1.1rem; font-weight: 600; line-height: 1.4; color: #374151;">He leído y acepto los <a href="#terminos" style="text-decoration: underline; color: var(--color-principal); font-weight: 700;">Términos y Condiciones</a>.</span>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="terminos-container" id="terminos" style="margin: 0 0 2rem 0; width: 100%;">
+                <h4 style="margin-bottom: 1rem; color: var(--color-principal); font-size: 1.1rem; font-weight: 700;">Términos y Condiciones</h4>
+                <div id="terminos-contenido">
+                    <p style="color: #6b7280; font-style: italic;">Seleccione un "Rol dentro de la agencia" para ver los términos y condiciones correspondientes.</p>
+                </div>
+            </div>
+
+            <div id="submit-wrapper">
+                <button type="submit" disabled title="Debe aceptar los términos y seleccionar al menos un área de interés.">Enviar Formulario</button>
+            </div>
+        </form>
+    </div>
+
+
+<script>
+// Términos y Condiciones cargados desde la base de datos
+const terminosData = JSON.parse('{{ terminos_json|escapejs }}');
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- MANEJO DINÁMICO DE TÉRMINOS Y CONDICIONES ---
+    const rolSelect = document.getElementById('id_rol_agencia');
+    const terminosContenido = document.getElementById('terminos-contenido');
+
+    function actualizarTerminos() {
+        if (!rolSelect || !terminosContenido) return;
+        const rolSeleccionado = rolSelect.value;
+
+        if (rolSeleccionado && terminosData[rolSeleccionado]) {
+            terminosContenido.innerHTML = terminosData[rolSeleccionado];
+            terminosContenido.classList.add('fade-in');
+        } else if (rolSeleccionado) {
+            terminosContenido.innerHTML = '<p style="color: #6b7280; font-style: italic;">Aún no se han cargado los términos y condiciones para este rol. Contacte al administrador.</p>';
+        } else {
+            terminosContenido.innerHTML = '<p style="color: #6b7280; font-style: italic;">Seleccione un "Rol dentro de la agencia" para ver los términos y condiciones correspondientes.</p>';
+        }
+    }
+
+    if (rolSelect) {
+        rolSelect.addEventListener('change', actualizarTerminos);
+        actualizarTerminos(); // Ejecutar al inicio por si ya tiene valor
+    }
+
+    // --- MANEJO DE VISIBILIDAD DE CAMPOS CONDICIONALES ---
+    const conditionalFields = [
+        { triggerId: 'id_miembro_iglesia', value: 'SI', targetId: 'div_info_iglesia' },
+        { triggerId: 'id_sirve_en_iglesia', value: 'SI', targetId: 'div_cual_servicio' },
+        { triggerId: 'id_voluntario_otra_org', value: 'SI', targetId: 'div_cual_org' },
+        { triggerId: 'id_hizo_hut', value: 'SI', targetId: 'div_hizo_hut_anio' },
+        { triggerId: 'id_hizo_reacciona', value: 'SI', targetId: 'div_cuando_reacciona' },
+        { triggerId: 'id_habla_idioma', value: 'SI', targetId: 'div_cual_idioma' },
+        { triggerId: 'id_lee_escribe_idioma', value: 'SI', targetId: 'div_cual_idioma_lee_escribe' },
+        { triggerId: 'id_nivel_estudio', value: ['UNIVERSITARIO_INCOMPLETO', 'UNIVERSITARIO_COMPLETO'], targetId: 'div_titulo_universitario' },
+        { triggerId: 'id_hijos', value: 'SI', targetId: 'div_hijos_fechas' },
+    ];
+
+    function toggleVisibility() {
+        conditionalFields.forEach(({ triggerId, value, targetId }) => {
+            const triggerElement = document.getElementById(triggerId);
+            const targetElement = document.getElementById(targetId);
+            if (!triggerElement || !targetElement) return;
+
+            const triggerValue = triggerElement.value;
+            const shouldShow = Array.isArray(value) ? value.includes(triggerValue) : triggerValue === value;
+
+            if (shouldShow) {
+                targetElement.classList.remove('oculto');
+                targetElement.classList.add('fade-in');
+            } else {
+                targetElement.classList.add('oculto');
+                targetElement.classList.remove('fade-in');
+            }
+        });
+    }
+
+    conditionalFields.forEach(({ triggerId }) => {
+        const triggerElement = document.getElementById(triggerId);
+        if (triggerElement) {
+            triggerElement.addEventListener('change', toggleVisibility);
+        }
+    });
+    toggleVisibility(); // Ejecutar al inicio
+
+    // --- VALIDACIÓN Y HABILITACIÓN DEL BOTÓN DE ENVÍO ---
+    const terminosCheckbox = document.getElementById('id_acepto_terminos');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const allAreaCheckboxes = document.querySelectorAll('input[name="areas_interes"]');
+    const otrasPropuestasTextarea = document.getElementById('id_otras_propuestas');
+    const divOtrasPropuestas = document.getElementById('div_otras_propuestas');
+
+    let otrasPropuestasCheckbox = null;
+    document.querySelectorAll('.area-checkbox-item').forEach(label => {
+        const span = label.querySelector('span');
+        if (span && span.textContent.trim().toLowerCase() === 'otras propuestas') {
+            otrasPropuestasCheckbox = label.querySelector('input[type="checkbox"]');
+        }
+    });
+
+    function validateAndToggleButton() {
+        if (!submitButton) return;
+
+        // 1. Verificar si los términos están aceptados
+        const terminosAceptados = terminosCheckbox ? terminosCheckbox.checked : false;
+
+        // 2. Verificar áreas de interés
+        const selectedAreas = Array.from(allAreaCheckboxes).filter(cb => cb.checked);
+        const hasMinAreas = selectedAreas.length > 0;
+
+        // 3. Lógica específica para "Otras Propuestas"
+        const otrasIsChecked = otrasPropuestasCheckbox && otrasPropuestasCheckbox.checked;
+        if (divOtrasPropuestas) {
+            if (otrasIsChecked) {
+                divOtrasPropuestas.classList.remove('oculto');
+                divOtrasPropuestas.classList.add('fade-in');
+            } else {
+                divOtrasPropuestas.classList.add('oculto');
+                divOtrasPropuestas.classList.remove('fade-in');
+            }
+        }
+
+        let otrasValido = true;
+        // Si "Otras" es la ÚNICA opción marcada, el textarea debe tener contenido
+        if (otrasIsChecked && selectedAreas.length === 1) {
+            otrasValido = otrasPropuestasTextarea && otrasPropuestasTextarea.value.trim().length >= 10;
+        }
+
+        // 4. Decisión final: Habilitar o deshabilitar el botón
+        if (terminosAceptados && hasMinAreas && otrasValido) {
+            submitButton.disabled = false;
+            submitButton.title = 'Enviar formulario';
+        } else {
+            submitButton.disabled = true;
+            // Mensaje de ayuda dinámico
+            if (!terminosAceptados) {
+                submitButton.title = 'Debe aceptar los Términos y Condiciones.';
+            } else if (!hasMinAreas) {
+                submitButton.title = 'Debe seleccionar al menos un área de interés.';
+            } else if (!otrasValido) {
+                submitButton.title = 'Si solo elige "Otras propuestas", debe describir su idea (mínimo 10 caracteres).';
+            } else {
+                 submitButton.title = 'Complete los campos requeridos.';
+            }
+        }
+    }
+
+    // Añadir listeners para que la validación se ejecute con cada cambio relevante
+    if (terminosCheckbox) {
+        terminosCheckbox.addEventListener('change', validateAndToggleButton);
+    }
+    if (otrasPropuestasTextarea) {
+        otrasPropuestasTextarea.addEventListener('input', validateAndToggleButton);
+    }
+    allAreaCheckboxes.forEach(cb => cb.addEventListener('change', validateAndToggleButton));
+
+    // Ejecutar al cargar para establecer el estado inicial del botón
+    validateAndToggleButton();
+});
+</script>
+
+</body>
+</html>

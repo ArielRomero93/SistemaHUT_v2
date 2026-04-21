@@ -280,7 +280,7 @@ def validar_extension_imagen(value):
 
 
 class AreaInteres(models.Model):
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=255)
 
     def __str__(self):
         return self.nombre
@@ -291,45 +291,68 @@ class AreaInteres(models.Model):
 
 
 class Voluntario(models.Model):
+    ROL_AGENCIA = [
+        ('CANDIDATO', 'Candidato'),
+        ('VOLUNTARIO', 'Voluntario'),
+        ('INTERESADO', 'Interesado'),
+    ]
+
     nombre = models.CharField(max_length=255)
     apellido = models.CharField(max_length=255)
-    email = models.EmailField()
-    telefono = models.CharField(max_length=20)
+    email = models.EmailField(blank=True, null=True)
+    telefono = models.CharField(max_length=20, blank=True, null=True)
 
     fecha_nacimiento = models.DateField()
 
-    pais_origen = models.CharField(max_length=100)
-    pais_residencia = models.CharField(max_length=100)
+    pais_origen = models.CharField(max_length=100, blank=True, null=True)
+    pais_residencia = models.CharField(max_length=100, blank=True, null=True)
     provincia_residencia = models.CharField(max_length=100)
     localidad = models.CharField(max_length=100)
-    barrio = models.CharField(max_length=100)
+    barrio = models.CharField(max_length=100, blank=True, null=True)
 
-    miembro_iglesia = models.CharField(max_length=10, choices=SI_NO)
+    hijos = models.CharField(max_length=10, choices=SI_NO, default='NO')
+    fechas_nacimiento_hijos = models.TextField(blank=True, help_text="Ej: Juan (12-05-2015)")
+    con_quien_convive = models.CharField(max_length=255, blank=True, null=True)
+    nombre_pastor = models.CharField(max_length=255, blank=True, null=True)
+    telefono_pastor = models.CharField(max_length=100, blank=True, null=True)
+    rol_agencia = models.CharField(max_length=30, choices=ROL_AGENCIA, blank=True, null=True)
+
+    miembro_iglesia = models.CharField(max_length=10, choices=SI_NO, blank=True, null=True)
     cual_iglesia = models.CharField(max_length=255, blank=True)
 
-    sirve_en_iglesia = models.CharField(max_length=10, choices=SI_NO)
+    sirve_en_iglesia = models.CharField(max_length=10, choices=SI_NO, blank=True, null=True)
     cual_servicio = models.CharField(max_length=255, blank=True)
 
     tiempo_asistiendo = models.CharField(max_length=100, blank=True)
 
-    voluntario_otra_org = models.CharField(max_length=10, choices=SI_NO)
+    voluntario_otra_org = models.CharField(max_length=10, choices=SI_NO, blank=True, null=True)
     cual_org = models.CharField(max_length=255, blank=True)
 
     hizo_hut = models.CharField(max_length=20, choices=REALIZO_HUT)
+    hizo_hut_anio = models.CharField(max_length=255, blank=True, null=True)
     hizo_reacciona = models.CharField(max_length=20, choices=REALIZO_REACCIONA)
+    cuando_reacciona = models.CharField(max_length=255, blank=True, null=True)
 
-    deseo_salir_campo = models.CharField(max_length=30, choices=SI_NO_TALVEZ)
+    deseo_salir_campo = models.CharField(max_length=30, choices=SI_NO_TALVEZ, blank=True, null=True)
 
-    nivel_estudio = models.CharField(max_length=30, choices=NIVEL_ESTUDIO)
+    nivel_estudio = models.CharField(max_length=30, choices=NIVEL_ESTUDIO, blank=True, null=True)
+    titulo_universitario = models.CharField(max_length=255, blank=True, null=True)
 
     cursos_formacion = models.TextField(blank=True)
     experiencia_profesional = models.TextField(blank=True)
 
+    habla_idioma = models.CharField(max_length=10, choices=SI_NO, blank=True, null=True)
+    cual_idioma = models.CharField(max_length=255, blank=True, null=True)
+    lee_escribe_idioma = models.CharField(max_length=10, choices=SI_NO, blank=True, null=True)
+    cual_idioma_lee_escribe = models.CharField(max_length=255, blank=True, null=True)
+
     areas_interes = models.ManyToManyField(AreaInteres, blank=True)
+    otras_propuestas = models.TextField(blank=True, null=True)
 
     foto_rostro = models.ImageField(
         upload_to='fotos_rostro/',
-        validators=[validar_extension_imagen]
+        validators=[validar_extension_imagen],
+        blank=True, null=True
     )
 
     def __str__(self):
@@ -338,6 +361,19 @@ class Voluntario(models.Model):
     class Meta:
         verbose_name = 'Voluntario'
         verbose_name_plural = 'Voluntarios'
+
+
+class TerminosCondiciones(models.Model):
+    rol = models.CharField(max_length=30, choices=Voluntario.ROL_AGENCIA, unique=True)
+    texto_html = models.TextField(help_text="Texto HTML para los términos y condiciones de este rol.")
+
+    def __str__(self):
+        return f"Términos para {self.get_rol_display()}"
+
+    class Meta:
+        verbose_name = 'Términos y Condiciones'
+        verbose_name_plural = 'Términos y Condiciones'
+
 
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
