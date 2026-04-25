@@ -51,6 +51,17 @@
                         <p class="mt-1 text-xs text-red-400">{{ form.activo.errors.0 }}</p>
                     {% endif %}
                 </div>
+
+                <div class="flex items-center gap-3 mt-2 bg-hut-300/5 p-4 rounded-lg border border-hut-300/10">
+                    {{ form.inscripciones_abiertas }}
+                    <div>
+                        <label for="{{ form.inscripciones_abiertas.id_for_label }}" class="block text-sm font-medium text-gray-200">{{ form.inscripciones_abiertas.label }}</label>
+                        <p class="text-xs text-gray-400 mt-0.5">Si marcas esta casilla, el formulario público de inscripción estará abierto. Si la desmarcas, se mostrará como cerrado.</p>
+                    </div>
+                    {% if form.inscripciones_abiertas.errors %}
+                        <p class="mt-1 text-xs text-red-400">{{ form.inscripciones_abiertas.errors.0 }}</p>
+                    {% endif %}
+                </div>
             </div>
 
             <div class="pt-6 border-t border-hut-300/10 flex justify-end gap-3">

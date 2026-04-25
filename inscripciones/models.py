@@ -104,6 +104,7 @@ class CursoHUT(models.Model):
     nombre = models.CharField(max_length=100, verbose_name='Nombre del Curso')
     anio = models.IntegerField(verbose_name='Año')
     activo = models.BooleanField(default=False, verbose_name='Habilitado')
+    inscripciones_abiertas = models.BooleanField(default=False, verbose_name='Inscripciones Abiertas')
 
     def save(self, *args, **kwargs):
         if self.activo:

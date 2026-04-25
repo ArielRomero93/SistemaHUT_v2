@@ -20,6 +20,7 @@ urlpatterns = [
     path('cursos/nuevo/', views.CursoHUTCreateView.as_view(), name='cursos_crear'),
     path('cursos/editar/<int:pk>/', views.CursoHUTUpdateView.as_view(), name='cursos_editar'),
     path('cursos/eliminar/<int:pk>/', views.CursoHUTDeleteView.as_view(), name='cursos_eliminar'),
+    path('cursos/toggle-inscripciones/<int:pk>/', views.toggle_inscripciones_curso, name='cursos_toggle_inscripciones'),
 
     # Grupos Moodle (Admin)
     path('grupos/', views.GruposMoodleListView.as_view(), name='grupos_lista'),

@@ -71,6 +71,10 @@ def inscripcion_lista(request):
 
 def inscripcion_crear(request):
     """Formulario público para crear una nueva inscripción (sin login requerido)."""
+    curso_activo = CursoHUT.objects.filter(activo=True).first()
+    if curso_activo and not curso_activo.inscripciones_abiertas:
+        return inscripciones_cerradas(request)
+
     if request.method == 'POST':
         form = InscripcionForm(request.POST)
         if form.is_valid():
@@ -350,6 +354,20 @@ class CursoHUTDeleteView(LoginRequiredMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Curso eliminado correctamente.')
         return super().delete(request, *args, **kwargs)
+
+@login_required
+def toggle_inscripciones_curso(request, pk):
+    from django.shortcuts import get_object_or_404
+    curso = get_object_or_404(CursoHUT, pk=pk)
+    if curso.activo:
+        curso.inscripciones_abiertas = not curso.inscripciones_abiertas
+        curso.save(update_fields=['inscripciones_abiertas'])
+        estado = "abiertas" if curso.inscripciones_abiertas else "cerradas"
+        messages.success(request, f'Inscripciones {estado} para el curso {curso.nombre}.')
+    else:
+        messages.error(request, 'Solo se pueden abrir o cerrar inscripciones en el curso activo.')
+    
+    return redirect('cursos_lista')
 
 # ==============================================================================
 # GRUPOS MOODLE CRUD
