@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar Curso{% else %}Nuevo Curso{% endif %} — Sistema HUT{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8 flex items-center gap-4">
+        <a href="{% url 'cursos_lista' %}" class="p-2 rounded-lg bg-hut-300/10 text-gray-400 hover:text-white hover:bg-hut-300/20 transition-all">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-bold text-white">{% if object %}Editar Curso{% else %}Nuevo Curso{% endif %}</h1>
+            <p class="text-sm text-gray-400 mt-1">Completa los datos del curso</p>
+        </div>
+    </div>
+
+    <div class="glass-card rounded-xl p-6 md:p-8">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">{{ form.nombre.label }}</label>
+                    {{ form.nombre }}
+                    {% if form.nombre.errors %}
+                        <p class="mt-1 text-xs text-red-400">{{ form.nombre.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.anio.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">{{ form.anio.label }}</label>
+                    {{ form.anio }}
+                    {% if form.anio.errors %}
+                        <p class="mt-1 text-xs text-red-400">{{ form.anio.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center gap-3 mt-2 bg-hut-300/5 p-4 rounded-lg border border-hut-300/10">
+                    {{ form.activo }}
+                    <div>
+                        <label for="{{ form.activo.id_for_label }}" class="block text-sm font-medium text-gray-200">{{ form.activo.label }}</label>
+                        <p class="text-xs text-gray-400 mt-0.5">Al habilitar este curso, los demás se deshabilitarán automáticamente.</p>
+                    </div>
+                    {% if form.activo.errors %}
+                        <p class="mt-1 text-xs text-red-400">{{ form.activo.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-hut-300/10 flex justify-end gap-3">
+                <a href="{% url 'cursos_lista' %}" class="px-5 py-2.5 text-sm font-medium text-gray-300 hover:text-white bg-hut-300/5 hover:bg-hut-300/10 rounded-lg transition-all">Cancelar</a>
+                <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-hut-400 to-hut-600 rounded-lg hover:from-hut-300 hover:to-hut-500 shadow-lg shadow-hut-300/20">
+                    Guardar Curso
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

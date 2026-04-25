@@ -105,6 +105,11 @@ class CursoHUT(models.Model):
     anio = models.IntegerField(verbose_name='Año')
     activo = models.BooleanField(default=False, verbose_name='Habilitado')
 
+    def save(self, *args, **kwargs):
+        if self.activo:
+            CursoHUT.objects.filter(activo=True).exclude(pk=self.pk).update(activo=False)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.nombre} ({self.anio})"
 

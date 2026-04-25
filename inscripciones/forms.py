@@ -1,4 +1,5 @@
 from django import forms
+from django.db.models import F
 from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Voluntario
 
 INPUT_CLASS = (
@@ -8,6 +9,9 @@ INPUT_CLASS = (
 SELECT_CLASS = (
     'form-input'
 )
+
+ADMIN_INPUT_CLASS = 'w-full bg-hut-300/5 border border-hut-300/20 rounded-lg px-4 py-2.5 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-hut-400 focus:ring-1 focus:ring-hut-400 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+ADMIN_SELECT_CLASS = 'w-full bg-hut-300/5 border border-hut-300/20 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-hut-400 focus:ring-1 focus:ring-hut-400 transition-colors [&>option]:bg-hut-900'
 
 
 class InscripcionForm(forms.ModelForm):
@@ -33,7 +37,7 @@ class InscripcionForm(forms.ModelForm):
         fields = [
             'nombre', 'apellido', 'edad', 'pais', 'provincia',
             'ciudad', 'telefono', 'congregacion', 'pastor',
-            'email', 'estadoCivil'
+            'email', 'estadoCivil', 'grupo'
         ]
         widgets = {
             'nombre': forms.TextInput(attrs={
@@ -82,6 +86,9 @@ class InscripcionForm(forms.ModelForm):
             'estadoCivil': forms.Select(attrs={
                 'class': SELECT_CLASS,
             }),
+            'grupo': forms.Select(attrs={
+                'class': SELECT_CLASS,
+            }),
         }
         labels = {
             'nombre': 'Nombre',
@@ -95,6 +102,7 @@ class InscripcionForm(forms.ModelForm):
             'pastor': 'Pastor/a',
             'email': 'Correo Electrónico',
             'estadoCivil': 'Estado Civil',
+            'grupo': 'Elegí tu Grupo',
         }
 
     def __init__(self, *args, **kwargs):
@@ -105,6 +113,25 @@ class InscripcionForm(forms.ModelForm):
 
         # Guardar el curso activo para usar en validaciones
         self.curso_activo = CursoHUT.objects.filter(activo=True).first()
+
+        # Configurar el campo grupo con los grupos disponibles del curso activo
+        self.fields['grupo'].required = True
+        self.fields['grupo'].empty_label = 'Seleccioná un grupo...'
+        self.fields['grupo'].error_messages = {'required': 'Debes seleccionar un grupo para continuar.'}
+
+        if self.curso_activo:
+            grupos_disponibles = GruposMoodle.objects.filter(
+                curso=self.curso_activo,
+                fecha_baja__isnull=True,
+                participantes__lt=F('capacidad'),
+            ).order_by('dia', 'horario')
+            self.fields['grupo'].queryset = grupos_disponibles
+        else:
+            self.fields['grupo'].queryset = GruposMoodle.objects.none()
+
+        # Formato del label: "Día — Horario (X vacantes)"
+        self.fields['grupo'].label_from_instance = lambda obj: f"{obj.dia} — {obj.horario} ({obj.capacidad - obj.participantes} vacante{'s' if (obj.capacidad - obj.participantes) != 1 else ''})"
+
 
         if 'pais' in self.data:
             try:
@@ -127,6 +154,16 @@ class InscripcionForm(forms.ModelForm):
             ).exists():
                 raise forms.ValidationError('Ya existe una inscripción con este correo electrónico para este curso.')
         return email
+
+    def clean_grupo(self):
+        grupo = self.cleaned_data.get('grupo')
+        if not grupo:
+            raise forms.ValidationError('Debes seleccionar un grupo para continuar.')
+        # Re-check capacity at save time to prevent race conditions
+        grupo.refresh_from_db()
+        if grupo.participantes >= grupo.capacidad:
+            raise forms.ValidationError('Este grupo ya está lleno. Por favor, elegí otro.')
+        return grupo
 
     def clean(self):
         cleaned_data = super().clean()
@@ -153,35 +190,53 @@ class InscripcionForm(forms.ModelForm):
         return instance
 
 
+class CursoHUTForm(forms.ModelForm):
+    class Meta:
+        model = CursoHUT
+        fields = ['nombre', 'anio', 'activo']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Ej: Curso HUT 2026',
+            }),
+            'anio': forms.NumberInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Ej: 2026',
+            }),
+            'activo': forms.CheckboxInput(attrs={
+                'class': 'appearance-none w-5 h-5 rounded border border-hut-300/30 bg-hut-300/10 checked:bg-hut-500 checked:border-hut-500 focus:outline-none focus:ring-2 focus:ring-hut-400/50 cursor-pointer transition-all flex items-center justify-center checked:after:content-[\'✔\'] checked:after:text-white checked:after:text-xs',
+            }),
+        }
+
 class GruposMoodleForm(forms.ModelForm):
     class Meta:
         model = GruposMoodle
         fields = ['nombre', 'curso', 'horario', 'dia', 'tutor', 'url_whatsapp', 'capacidad']
         widgets = {
             'nombre': forms.TextInput(attrs={
-                'class': INPUT_CLASS,
+                'class': ADMIN_INPUT_CLASS,
                 'placeholder': 'Ej: Grupo 1',
             }),
             'curso': forms.Select(attrs={
-                'class': SELECT_CLASS,
+                'class': ADMIN_SELECT_CLASS,
             }),
             'horario': forms.TextInput(attrs={
-                'class': INPUT_CLASS,
+                'class': ADMIN_INPUT_CLASS,
                 'placeholder': 'Ej: 19:00 a 21:00 hs',
             }),
             'dia': forms.Select(attrs={
-                'class': SELECT_CLASS,
+                'class': ADMIN_SELECT_CLASS,
             }),
             'tutor': forms.TextInput(attrs={
-                'class': INPUT_CLASS,
+                'class': ADMIN_INPUT_CLASS,
                 'placeholder': 'Ej: Juan Pérez',
             }),
             'url_whatsapp': forms.URLInput(attrs={
-                'class': INPUT_CLASS,
+                'class': ADMIN_INPUT_CLASS,
                 'placeholder': 'Ej: https://chat.whatsapp.com/...',
             }),
             'capacidad': forms.NumberInput(attrs={
-                'class': INPUT_CLASS,
+                'class': ADMIN_INPUT_CLASS,
                 'min': '1',
             }),
         }
@@ -267,4 +322,23 @@ class VoluntarioForm(forms.ModelForm):
             'areas_interes': forms.CheckboxSelectMultiple(),
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+class ImportarEstadoAlumnosForm(forms.Form):
+    curso = forms.ModelChoiceField(
+        queryset=CursoHUT.objects.all().order_by('-anio'),
+        label='Curso a actualizar',
+        widget=forms.Select(attrs={
+            'class': ADMIN_SELECT_CLASS,
+        }),
+        required=True
+    )
+    archivo_csv = forms.FileField(
+        label='Archivo CSV',
+        widget=forms.ClearableFileInput(attrs={
+            'class': 'w-full text-sm text-gray-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-hut-400/10 file:text-hut-400 hover:file:bg-hut-400/20 file:transition-colors file:cursor-pointer',
+            'accept': '.csv'
+        }),
+        required=True
+    )
 

@@ -31,12 +31,13 @@
 </head>
 <body style="margin: 0; padding: 0; background-color: #F5F3EA; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
     <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
-        ¡Gracias por inscribirte al HUT 2026! Pronto recibirás más información.
+        ¡Gracias por inscribirte al HUT 2026! Ya tenés tu grupo asignado.
     </div>
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #F5F3EA;">
         <tr>
             <td align="center" style="padding: 32px 16px;">
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="560" class="email-container" style="max-width: 560px; width: 100%;">
+                    <!-- Header -->
                     <tr>
                         <td align="center" style="background-color: #81A9A4; border-radius: 16px 16px 0 0; padding: 36px 32px;" class="email-padding">
                             <h1 class="heading-text" style="margin: 0; font-size: 26px; line-height: 34px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px;">
@@ -47,6 +48,8 @@
                             </p>
                         </td>
                     </tr>
+
+                    <!-- Body -->
                     <tr>
                         <td style="background-color: #ffffff; padding: 36px 36px 28px 36px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb;" class="email-padding card-padding">
                             <p class="body-text" style="margin: 0 0 16px 0; font-size: 16px; line-height: 26px; color: #374151; text-align: center;">
@@ -58,6 +61,9 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 28px;">
                                 <tr><td style="height: 1px; background-color: #e5e7eb; font-size: 0; line-height: 0;">&nbsp;</td></tr>
                             </table>
+
+                            {% if grupo %}
+                            <!-- Group Info Card -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 16px;">
                                 <tr>
                                     <td style="background-color: #f0f7f6; border: 1px solid #d1e3e0; border-radius: 12px; padding: 20px;">
@@ -65,25 +71,35 @@
                                             <tr>
                                                 <td style="width: 44px; vertical-align: middle; padding-right: 14px;">
                                                     <div style="width: 40px; height: 40px; background-color: #81A9A4; border-radius: 10px; text-align: center; line-height: 40px;">
-                                                        <span style="font-size: 20px;">🔑</span>
+                                                        <span style="font-size: 20px;">👥</span>
                                                     </div>
                                                 </td>
                                                 <td style="vertical-align: middle;">
                                                     <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; color: #5e8a85;">
-                                                        Tu Código de Acceso Único es:
+                                                        Tu Grupo Asignado:
                                                     </p>
-                                                    <p style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: 1px; color: #111827;">
-                                                        {{ codigo_acceso }}
+                                                    <p style="margin: 0; font-size: 20px; font-weight: 900; color: #111827;">
+                                                        {{ grupo.nombre }}
+                                                    </p>
+                                                    <p style="margin: 6px 0 0 0; font-size: 14px; color: #6b7280;">
+                                                        📅 {{ grupo.dia }} · 🕐 {{ grupo.horario }} (hora Argentina)
                                                     </p>
                                                 </td>
                                             </tr>
                                         </table>
+
+                                        {% if grupo.url_whatsapp %}
                                         <div style="margin-top: 20px; text-align: center;">
-                                            <a href="{{ link_acceso }}" style="background-color: #3d6b67; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Seleccionar Mi Grupo / Horario</a>
+                                            <a href="{{ grupo.url_whatsapp }}" style="background-color: #25D366; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 15px; display: inline-block;">
+                                                📲 Unirme al grupo de WhatsApp
+                                            </a>
                                         </div>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             </table>
+
+                            <!-- Important notice -->
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 8px;">
                                 <tr>
                                     <td style="background-color: #fef9ee; border: 1px solid #f0e6cc; border-radius: 12px; padding: 20px;">
@@ -99,7 +115,7 @@
                                                         ¡Súper Importante!
                                                     </p>
                                                     <p style="margin: 0; font-size: 14px; line-height: 22px; color: #4b5563;">
-                                                        Por favor, ingresá al enlace de arriba y elegí entre uno de los grupos disponibles.
+                                                        Por favor, unite al grupo de WhatsApp haciendo clic en el botón verde de arriba. Ahí recibirás todas las novedades y materiales del curso.
                                                     </p>
                                                 </td>
                                             </tr>
@@ -107,9 +123,12 @@
                                     </td>
                                 </tr>
                             </table>
+                            {% endif %}
 
                         </td>
                     </tr>
+
+                    <!-- Divider -->
                     <tr>
                         <td style="background-color: #ffffff; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; padding: 0 36px;" class="email-padding">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
@@ -117,6 +136,8 @@
                             </table>
                         </td>
                     </tr>
+
+                    <!-- Saludo -->
                     <tr>
                         <td style="background-color: #ffffff; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb; padding: 24px 36px 32px 36px;" class="email-padding">
                             <p style="margin: 0 0 4px 0; font-size: 16px; line-height: 26px; color: #374151;">
@@ -127,6 +148,8 @@
                             </p>
                         </td>
                     </tr>
+
+                    <!-- Footer -->
                     <tr>
                         <td align="center" style="background-color: #3d6b67; border-radius: 0 0 16px 16px; padding: 24px 36px;" class="email-padding">
                             <p style="margin: 0 0 6px 0; font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 500;">

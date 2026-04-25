@@ -9,8 +9,8 @@ from django.db.models import Q
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import FormularioInscripcionHUT, ProvinciaEstado, CursoHUT, GruposMoodle
-from .forms import InscripcionForm, GruposMoodleForm, InscriptoLoginForm, SeleccionGrupoForm, VoluntarioForm
+from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle
+from .forms import InscripcionForm, GruposMoodleForm, CursoHUTForm, InscriptoLoginForm, SeleccionGrupoForm, VoluntarioForm
 from .envio_mail import enviar_confirmacion_inscripcion
 
 
@@ -18,7 +18,12 @@ from .envio_mail import enviar_confirmacion_inscripcion
 def inscripcion_lista(request):
     """Vista principal: grilla de inscripciones (solo administradores logueados)."""
     query = request.GET.get('q', '').strip()
-    inscripciones = FormularioInscripcionHUT.objects.select_related('pais', 'provincia').all()
+    curso_id = request.GET.get('curso')
+    pais_id = request.GET.get('pais')
+    fecha_desde_str = request.GET.get('fecha_desde')
+    fecha_hasta_str = request.GET.get('fecha_hasta')
+
+    inscripciones = FormularioInscripcionHUT.objects.select_related('pais', 'provincia', 'curso').all()
 
     if query:
         inscripciones = inscripciones.filter(
@@ -30,6 +35,22 @@ def inscripcion_lista(request):
             Q(pastor__icontains=query)
         )
 
+    if curso_id:
+        inscripciones = inscripciones.filter(curso_id=curso_id)
+        
+    if pais_id:
+        inscripciones = inscripciones.filter(pais_id=pais_id)
+        
+    if fecha_desde_str:
+        fecha_desde = f"{fecha_desde_str} 00:00:00"
+        inscripciones = inscripciones.filter(fecha_creacion__gte=fecha_desde)
+        
+    if fecha_hasta_str:
+        fecha_hasta = f"{fecha_hasta_str} 23:59:59"
+        inscripciones = inscripciones.filter(fecha_creacion__lte=fecha_hasta)
+
+    inscripciones = inscripciones.order_by('-fecha_creacion')
+
     paginator = Paginator(inscripciones, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -37,7 +58,13 @@ def inscripcion_lista(request):
     context = {
         'page_obj': page_obj,
         'query': query,
+        'curso_id_filtro': curso_id,
+        'pais_id_filtro': pais_id,
+        'fecha_desde': fecha_desde_str,
+        'fecha_hasta': fecha_hasta_str,
         'total': inscripciones.count(),
+        'cursos': CursoHUT.objects.all().order_by('-anio', '-id'),
+        'paises': Pais.objects.all().order_by('paisNombre'),
     }
     return render(request, 'inscripciones/lista.html', context)
 
@@ -49,6 +76,8 @@ def inscripcion_crear(request):
         if form.is_valid():
             inscripcion = form.save()
             enviar_confirmacion_inscripcion(inscripcion)
+            # Guardar el ID en sesión para mostrar datos del grupo en la página de agradecimiento
+            request.session['inscripcion_exitosa_id'] = inscripcion.id
             return redirect('inscripcion_gracias')
     else:
         form = InscripcionForm()
@@ -58,7 +87,18 @@ def inscripcion_crear(request):
 
 def inscripcion_gracias(request):
     """Página de agradecimiento post-inscripción (pública)."""
-    return render(request, 'publico/gracias_publica.html')
+    inscripcion_id = request.session.pop('inscripcion_exitosa_id', None)
+    context = {}
+    if inscripcion_id:
+        try:
+            inscripcion = FormularioInscripcionHUT.objects.select_related('grupo').get(id=inscripcion_id)
+            context['inscripcion'] = inscripcion
+            if inscripcion.grupo:
+                context['grupo'] = inscripcion.grupo
+                context['whatsapp_url'] = inscripcion.grupo.url_whatsapp
+        except FormularioInscripcionHUT.DoesNotExist:
+            pass
+    return render(request, 'publico/gracias_publica.html', context)
 
 
 def inscripciones_cerradas(request):
@@ -150,6 +190,11 @@ def exportar_csv_completo(request):
 
     # Aplicamos la misma lógica de búsqueda que en la lista
     query = request.GET.get('q', '').strip()
+    curso_id = request.GET.get('curso')
+    pais_id = request.GET.get('pais')
+    fecha_desde_str = request.GET.get('fecha_desde')
+    fecha_hasta_str = request.GET.get('fecha_hasta')
+
     inscripciones = FormularioInscripcionHUT.objects.select_related('pais', 'provincia', 'curso', 'grupo').all()
 
     if query:
@@ -161,6 +206,22 @@ def exportar_csv_completo(request):
             Q(ciudad__icontains=query) |
             Q(pastor__icontains=query)
         )
+        
+    if curso_id:
+        inscripciones = inscripciones.filter(curso_id=curso_id)
+        
+    if pais_id:
+        inscripciones = inscripciones.filter(pais_id=pais_id)
+        
+    if fecha_desde_str:
+        fecha_desde = f"{fecha_desde_str} 00:00:00"
+        inscripciones = inscripciones.filter(fecha_creacion__gte=fecha_desde)
+        
+    if fecha_hasta_str:
+        fecha_hasta = f"{fecha_hasta_str} 23:59:59"
+        inscripciones = inscripciones.filter(fecha_creacion__lte=fecha_hasta)
+
+    inscripciones = inscripciones.order_by('-fecha_creacion')
         
     fecha = datetime.now().strftime('%Y%m%d_%H%M')
 
@@ -237,6 +298,60 @@ def exportar_csv_completo(request):
 
 
 # ==============================================================================
+# CURSOS HUT CRUD
+# ==============================================================================
+
+class CursoHUTListView(LoginRequiredMixin, ListView):
+    model = CursoHUT
+    template_name = 'inscripciones/cursohut_list.html'
+    context_object_name = 'cursos'
+    paginate_by = 15
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        q = self.request.GET.get('q')
+        if q:
+            queryset = queryset.filter(
+                Q(nombre__icontains=q) |
+                Q(anio__icontains=q)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')
+        return context
+
+class CursoHUTCreateView(LoginRequiredMixin, CreateView):
+    model = CursoHUT
+    form_class = CursoHUTForm
+    template_name = 'inscripciones/cursohut_form.html'
+    success_url = reverse_lazy('cursos_lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Curso creado correctamente.')
+        return super().form_valid(form)
+
+class CursoHUTUpdateView(LoginRequiredMixin, UpdateView):
+    model = CursoHUT
+    form_class = CursoHUTForm
+    template_name = 'inscripciones/cursohut_form.html'
+    success_url = reverse_lazy('cursos_lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Curso actualizado correctamente.')
+        return super().form_valid(form)
+
+class CursoHUTDeleteView(LoginRequiredMixin, DeleteView):
+    model = CursoHUT
+    template_name = 'inscripciones/cursohut_confirm_delete.html'
+    success_url = reverse_lazy('cursos_lista')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Curso eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)
+
+# ==============================================================================
 # GRUPOS MOODLE CRUD
 # ==============================================================================
 
@@ -249,17 +364,22 @@ class GruposMoodleListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().select_related('curso')
         q = self.request.GET.get('q')
+        curso_id = self.request.GET.get('curso')
         if q:
             queryset = queryset.filter(
                 Q(nombre__icontains=q) |
                 Q(tutor__icontains=q) |
                 Q(dia__icontains=q)
             )
+        if curso_id:
+            queryset = queryset.filter(curso_id=curso_id)
         return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['query'] = self.request.GET.get('q', '')
+        context['curso_id_filtro'] = self.request.GET.get('curso', '')
+        context['cursos'] = CursoHUT.objects.all().order_by('-anio', '-id')
         for grupo in context['grupos']:
             # Usar el campo participantes directamente del modelo GrupoMoodle,
             # el cual ya se mantiene sincronizado mediante las señales pre_save y post_save.
@@ -382,3 +502,96 @@ def formulario_voluntario_crear(request):
 def formulario_voluntario_gracias(request):
     """Página de agradecimiento post-inscripción de voluntarios."""
     return render(request, 'publico/gracias_voluntario.html')
+
+# ==============================================================================
+# IMPORTACIÓN DE ALUMNOS (ADMIN)
+# ==============================================================================
+
+@login_required
+def cambio_estado_alumno_view(request):
+    """Vista para importar un CSV y actualizar estado de alumnos (fecha de finalización y abandonos)."""
+    from .forms import ImportarEstadoAlumnosForm
+    from django.utils import timezone
+    from django.urls import reverse
+    import csv
+
+    inscripciones_curso = None
+    curso_seleccionado = None
+
+    if request.method == 'POST':
+        form = ImportarEstadoAlumnosForm(request.POST, request.FILES)
+        if form.is_valid():
+            curso_seleccionado = form.cleaned_data['curso']
+            archivo_csv = request.FILES['archivo_csv']
+            
+            try:
+                decoded_file = archivo_csv.read().decode('utf-8-sig').splitlines()
+                reader = csv.reader(decoded_file, delimiter=';')
+                headers = next(reader)  # Ignorar la cabecera
+            except Exception as e:
+                messages.error(request, f"Error al leer el archivo CSV: {e}")
+                return redirect('cambio_estado_alumno')
+
+            datos_csv = {}
+            for row in reader:
+                if not row:
+                    continue
+                # Se asume formato: Nombre, Apellido, mail, curso, fecha de finalizacion
+                if len(row) >= 5:
+                    email_val = row[2].strip().lower()
+                    fecha_val = row[4].strip()
+                    datos_csv[email_val] = fecha_val
+
+            inscripciones = FormularioInscripcionHUT.objects.filter(curso=curso_seleccionado)
+            
+            actualizados_finalizacion = 0
+            marcados_abandonados = 0
+
+            for inscripcion in inscripciones:
+                email_db = inscripcion.email.lower().strip()
+                if email_db in datos_csv:
+                    fecha_str = datos_csv[email_db]
+                    if fecha_str:
+                        try:
+                            if '-' in fecha_str:
+                                dt = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+                            elif '/' in fecha_str:
+                                dt = datetime.strptime(fecha_str, '%d/%m/%Y').date()
+                            else:
+                                dt = None
+
+                            if dt:
+                                inscripcion.fecha_finalizacion = dt
+                                inscripcion.abandonado = False
+                                inscripcion.fecha_abandono = None
+                                inscripcion.save(update_fields=['fecha_finalizacion', 'abandonado', 'fecha_abandono'])
+                                actualizados_finalizacion += 1
+                        except ValueError:
+                            messages.warning(request, f"Formato de fecha inválido para {email_db}: {fecha_str}")
+                else:
+                    if not inscripcion.abandonado:
+                        inscripcion.abandonado = True
+                        inscripcion.fecha_abandono = timezone.now()
+                        inscripcion.save(update_fields=['abandonado', 'fecha_abandono'])
+                        marcados_abandonados += 1
+            
+            messages.success(request, f"Importación exitosa. {actualizados_finalizacion} finalizados, {marcados_abandonados} marcados como abandonados.")
+            return redirect(f"{reverse('cambio_estado_alumno')}?curso={curso_seleccionado.id}")
+    else:
+        curso_id = request.GET.get('curso')
+        initial = {}
+        if curso_id:
+            try:
+                curso_seleccionado = CursoHUT.objects.get(id=curso_id)
+                initial['curso'] = curso_seleccionado
+                inscripciones_curso = FormularioInscripcionHUT.objects.filter(curso=curso_seleccionado).order_by('apellido', 'nombre')
+            except CursoHUT.DoesNotExist:
+                pass
+        form = ImportarEstadoAlumnosForm(initial=initial)
+        
+    context = {
+        'form': form,
+        'inscripciones': inscripciones_curso,
+        'curso_seleccionado': curso_seleccionado,
+    }
+    return render(request, 'inscripciones/cambio_estado_alumno.html', context)

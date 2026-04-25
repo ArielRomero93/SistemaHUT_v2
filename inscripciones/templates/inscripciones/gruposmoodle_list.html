@@ -19,16 +19,25 @@
 
     <!-- Search bar -->
     <div class="glass-card rounded-xl p-4 mb-6">
-        <form method="get" class="flex gap-4 items-center">
-            <div class="relative flex-1">
+        <form method="get" class="flex gap-4 items-center flex-wrap">
+            <div class="relative flex-1 min-w-[250px]">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <input type="text" name="q" value="{{ query }}" placeholder="Buscar por nombre, tutor, día..." class="w-full pl-10 pr-4 py-2 bg-hut-300/10 border border-hut-300/20 rounded-lg text-sm text-gray-200 focus:outline-none focus:border-hut-300/50">
             </div>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-hut-600 rounded-lg hover:bg-hut-500">Buscar</button>
-            {% if query %}
-                <a href="{% url 'grupos_lista' %}" class="px-4 py-2 text-sm text-gray-400 border border-hut-300/20 rounded-lg hover:bg-hut-300/10">Limpiar</a>
+            <div class="relative min-w-[200px]">
+                <select name="curso" class="w-full pl-4 pr-10 py-2 bg-hut-300/10 border border-hut-300/20 rounded-lg text-sm text-gray-200 focus:outline-none focus:border-hut-300/50 appearance-none [&>option]:bg-hut-900 cursor-pointer">
+                    <option value="">Todos los cursos</option>
+                    {% for c in cursos %}
+                        <option value="{{ c.id }}" {% if curso_id_filtro == c.id|stringformat:"s" %}selected{% endif %}>{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
+                <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-hut-600 rounded-lg hover:bg-hut-500 transition-colors">Filtrar</button>
+            {% if query or curso_id_filtro %}
+                <a href="{% url 'grupos_lista' %}" class="px-4 py-2 text-sm text-gray-400 border border-hut-300/20 rounded-lg hover:bg-hut-300/10 transition-colors">Limpiar</a>
             {% endif %}
         </form>
     </div>
@@ -54,8 +63,8 @@
                         <td class="p-4 text-sm text-gray-400">{{ grupo.tutor }}</td>
                         <td class="p-4 text-sm text-gray-400">{{ grupo.dia }} - {{ grupo.horario }}</td>
                         <td class="p-4 text-sm text-center">
-                            <span class="px-2 py-1 rounded bg-hut-300/10 text-hut-200">
-                                {{ grupo.formularioinscripcionhut_set.count }} / {{ grupo.capacidad }}
+                            <span class="px-2 py-1 rounded bg-hut-300/10 text-hut-200 border border-hut-300/20">
+                                {{ grupo.cantidad_inscriptos }} / {{ grupo.capacidad }}
                             </span>
                         </td>
                         <td class="p-4 text-sm text-right flex justify-end gap-2">
@@ -69,7 +78,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="p-8 text-center text-gray-400">
+                        <td colspan="6" class="p-8 text-center text-gray-400">
                             No se encontraron grupos. <a href="{% url 'grupos_crear' %}" class="text-hut-300 hover:underline">¡Crea el primero!</a>
                         </td>
                     </tr>
@@ -83,10 +92,10 @@
             <span class="text-sm text-gray-400">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
             <div class="flex gap-2">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1 text-sm bg-hut-300/10 rounded-md text-gray-300 hover:bg-hut-300/20">Anterior</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query }}{% endif %}{% if curso_id_filtro %}&curso={{ curso_id_filtro }}{% endif %}" class="px-3 py-1 text-sm bg-hut-300/10 rounded-md text-gray-300 hover:bg-hut-300/20">Anterior</a>
                 {% endif %}
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}" class="px-3 py-1 text-sm bg-hut-300/10 rounded-md text-gray-300 hover:bg-hut-300/20">Siguiente</a>
+                    <a href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query }}{% endif %}{% if curso_id_filtro %}&curso={{ curso_id_filtro }}{% endif %}" class="px-3 py-1 text-sm bg-hut-300/10 rounded-md text-gray-300 hover:bg-hut-300/20">Siguiente</a>
                 {% endif %}
             </div>
         </div>
