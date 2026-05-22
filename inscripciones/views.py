@@ -333,6 +333,7 @@ class CursoHUTCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('cursos_lista')
 
     def form_valid(self, form):
+        form.instance.usuario_auditoria = self.request.user
         messages.success(self.request, 'Curso creado correctamente.')
         return super().form_valid(form)
 
@@ -343,6 +344,7 @@ class CursoHUTUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('cursos_lista')
 
     def form_valid(self, form):
+        form.instance.usuario_auditoria = self.request.user
         messages.success(self.request, 'Curso actualizado correctamente.')
         return super().form_valid(form)
 
@@ -422,6 +424,7 @@ class GruposMoodleCreateView(LoginRequiredMixin, CreateView):
         return context
 
     def form_valid(self, form):
+        form.instance.usuario_auditoria = self.request.user
         messages.success(self.request, 'Grupo creado correctamente.')
         return super().form_valid(form)
 
@@ -443,6 +446,7 @@ class GruposMoodleUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
     def form_valid(self, form):
+        form.instance.usuario_auditoria = self.request.user
         messages.success(self.request, 'Grupo actualizado correctamente.')
         return super().form_valid(form)
 
@@ -494,6 +498,7 @@ class TutorCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('tutores_lista')
 
     def form_valid(self, form):
+        form.instance.usuario_auditoria = self.request.user
         messages.success(self.request, 'Tutor creado correctamente.')
         return super().form_valid(form)
 
@@ -504,6 +509,7 @@ class TutorUpdateView(LoginRequiredMixin, UpdateView):
     success_url = reverse_lazy('tutores_lista')
 
     def form_valid(self, form):
+        form.instance.usuario_auditoria = self.request.user
         messages.success(self.request, 'Tutor actualizado correctamente.')
         return super().form_valid(form)
 

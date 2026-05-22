@@ -1,4 +1,13 @@
 from django.db import models
+from django.contrib.auth.models import User
+
+class AuditoriaModel(models.Model):
+    usuario_auditoria = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Usuario Modificación")
+    fecha_auditoria = models.DateTimeField(auto_now=True, verbose_name="Fecha Modificación")
+
+    class Meta:
+        abstract = True
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
@@ -72,7 +81,7 @@ class OpcionesMenu(models.Model):
 # UBICACION
 # ======================
 
-class Pais(models.Model):
+class Pais(AuditoriaModel):
     paisNombre = models.CharField(max_length=100)
 
     class Meta:
@@ -84,7 +93,7 @@ class Pais(models.Model):
         return self.paisNombre
 
 
-class ProvinciaEstado(models.Model):
+class ProvinciaEstado(AuditoriaModel):
     idPais = models.ForeignKey(Pais, on_delete=models.CASCADE)
     provinciaNombre = models.CharField(max_length=100)
     gmt = models.CharField(max_length=10, blank=True, null=True, help_text="Ej: UTC-3")
@@ -101,7 +110,7 @@ class ProvinciaEstado(models.Model):
 # CURSOS HUT
 # ======================
 
-class CursoHUT(models.Model):
+class CursoHUT(AuditoriaModel):
     nombre = models.CharField(max_length=100, verbose_name='Nombre del Curso')
     anio = models.IntegerField(verbose_name='Año')
     activo = models.BooleanField(default=False, verbose_name='Habilitado')
@@ -126,7 +135,7 @@ def get_curso_activo():
     curso = CursoHUT.objects.filter(activo=True).first()
     return curso.pk if curso else None
 
-class Tutor(models.Model):
+class Tutor(AuditoriaModel):
     nombre = models.CharField(max_length=100, verbose_name='Nombre')
     apellido = models.CharField(max_length=100, verbose_name='Apellido')
     email = models.EmailField(blank=True, null=True, verbose_name='Correo Electrónico')
@@ -143,7 +152,7 @@ class Tutor(models.Model):
         ordering = ['apellido', 'nombre']
 
 
-class GruposMoodle(models.Model):
+class GruposMoodle(AuditoriaModel):
     DIAS_SEMANA = [
         ('Lunes', 'Lunes'),
         ('Martes', 'Martes'),
@@ -305,7 +314,7 @@ def validar_extension_imagen(value):
         raise ValidationError('Solo se permiten imágenes JPG o PNG.')
 
 
-class AreaInteres(models.Model):
+class AreaInteres(AuditoriaModel):
     nombre = models.CharField(max_length=255)
 
     def __str__(self):
@@ -389,7 +398,7 @@ class Voluntario(models.Model):
         verbose_name_plural = 'Voluntarios'
 
 
-class TerminosCondiciones(models.Model):
+class TerminosCondiciones(AuditoriaModel):
     rol = models.CharField(max_length=30, choices=Voluntario.ROL_AGENCIA, unique=True)
     texto_html = models.TextField(help_text="Texto HTML para los términos y condiciones de este rol.")
 

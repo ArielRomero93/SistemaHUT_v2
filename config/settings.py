@@ -87,6 +87,10 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/nueva/'
 
+# Session config
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 3600  # 1 hour
+
 # ──────────────────────────────────────────────
 # Email — Configuración de envío de correos
 # ──────────────────────────────────────────────
