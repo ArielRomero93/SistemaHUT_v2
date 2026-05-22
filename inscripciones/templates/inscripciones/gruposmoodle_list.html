@@ -49,7 +49,8 @@
                     <tr class="border-b border-hut-300/10 bg-hut-300/5">
                         <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider">Nombre</th>
                         <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider">Curso</th>
-                        <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider">Tutor</th>
+                        <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider">Tutores</th>
+                        <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider">Ubicación</th>
                         <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider">Día y Horario</th>
                         <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider text-center">Inscriptos</th>
                         <th class="p-4 text-xs font-semibold text-gray-300 uppercase tracking-wider text-right">Acciones</th>
@@ -60,7 +61,21 @@
                     <tr class="hover:bg-hut-300/5 transition-colors">
                         <td class="p-4 text-sm font-medium text-gray-200">{{ grupo.nombre }}</td>
                         <td class="p-4 text-sm text-gray-400">{{ grupo.curso.nombre }}</td>
-                        <td class="p-4 text-sm text-gray-400">{{ grupo.tutor }}</td>
+                        <td class="p-4 text-sm text-gray-400">
+                            {% for t in grupo.tutores.all %}
+                                <span class="inline-block px-2 py-0.5 rounded-md bg-hut-300/10 text-hut-200 border border-hut-300/15 text-xs mr-1 mb-1">{{ t.nombre }} {{ t.apellido }}</span>
+                            {% empty %}
+                                <span class="text-gray-500">—</span>
+                            {% endfor %}
+                        </td>
+                        <td class="p-4 text-sm text-gray-400">
+                            {% if grupo.pais %}
+                                {{ grupo.pais.paisNombre }}
+                                {% if grupo.provincia %}- {{ grupo.provincia.provinciaNombre }}{% endif %}
+                            {% else %}
+                                <span class="text-gray-500">—</span>
+                            {% endif %}
+                        </td>
                         <td class="p-4 text-sm text-gray-400">{{ grupo.dia }} - {{ grupo.horario }}</td>
                         <td class="p-4 text-sm text-center">
                             <span class="px-2 py-1 rounded bg-hut-300/10 text-hut-200 border border-hut-300/20">

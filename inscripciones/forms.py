@@ -1,6 +1,6 @@
 from django import forms
 from django.db.models import F
-from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Voluntario
+from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Voluntario, Tutor
 
 INPUT_CLASS = (
     'form-input'
@@ -214,7 +214,7 @@ class CursoHUTForm(forms.ModelForm):
 class GruposMoodleForm(forms.ModelForm):
     class Meta:
         model = GruposMoodle
-        fields = ['nombre', 'curso', 'horario', 'dia', 'tutor', 'url_whatsapp', 'capacidad']
+        fields = ['nombre', 'curso', 'horario', 'dia', 'pais', 'provincia', 'tutores', 'url_whatsapp', 'capacidad']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': ADMIN_INPUT_CLASS,
@@ -230,9 +230,17 @@ class GruposMoodleForm(forms.ModelForm):
             'dia': forms.Select(attrs={
                 'class': ADMIN_SELECT_CLASS,
             }),
-            'tutor': forms.TextInput(attrs={
-                'class': ADMIN_INPUT_CLASS,
-                'placeholder': 'Ej: Juan Pérez',
+            'pais': forms.Select(attrs={
+                'class': ADMIN_SELECT_CLASS,
+                'id': 'id_pais',
+            }),
+            'provincia': forms.Select(attrs={
+                'class': ADMIN_SELECT_CLASS,
+                'id': 'id_provincia',
+            }),
+            'tutores': forms.SelectMultiple(attrs={
+                'class': 'hidden',
+                'id': 'id_tutores',
             }),
             'url_whatsapp': forms.URLInput(attrs={
                 'class': ADMIN_INPUT_CLASS,
@@ -241,6 +249,56 @@ class GruposMoodleForm(forms.ModelForm):
             'capacidad': forms.NumberInput(attrs={
                 'class': ADMIN_INPUT_CLASS,
                 'min': '1',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['tutores'].queryset = Tutor.objects.filter(activo=True)
+        self.fields['tutores'].required = False
+        
+        self.fields['pais'].queryset = Pais.objects.all().order_by('paisNombre')
+        self.fields['provincia'].queryset = ProvinciaEstado.objects.none()
+        self.fields['pais'].empty_label = 'Seleccione un País'
+        self.fields['provincia'].empty_label = 'Seleccione una Provincia/Estado'
+
+        if 'pais' in self.data:
+            try:
+                pais_id = int(self.data.get('pais'))
+                self.fields['provincia'].queryset = ProvinciaEstado.objects.filter(
+                    idPais_id=pais_id
+                ).order_by('provinciaNombre')
+            except (ValueError, TypeError):
+                pass
+        elif self.instance.pk and self.instance.pais:
+            self.fields['provincia'].queryset = (
+                self.instance.pais.provinciaestado_set.order_by('provinciaNombre')
+            )
+
+
+class TutorForm(forms.ModelForm):
+    class Meta:
+        model = Tutor
+        fields = ['nombre', 'apellido', 'email', 'telefono', 'activo']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Ej: Juan',
+            }),
+            'apellido': forms.TextInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Ej: Pérez',
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Ej: tutor@email.com',
+            }),
+            'telefono': forms.TextInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Ej: +54 9 351 1234567',
+            }),
+            'activo': forms.CheckboxInput(attrs={
+                'class': 'appearance-none w-5 h-5 rounded border border-hut-300/30 bg-hut-300/10 checked:bg-hut-500 checked:border-hut-500 focus:outline-none focus:ring-2 focus:ring-hut-400/50 cursor-pointer transition-all flex items-center justify-center checked:after:content-[\'✔\'] checked:after:text-white checked:after:text-xs',
             }),
         }
 

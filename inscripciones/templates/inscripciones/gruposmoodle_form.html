@@ -26,10 +26,66 @@
         font-weight: 500;
         color: #9ca3af;
     }
-    .help-text {
-        font-size: 0.75rem;
-        color: #6b7280;
+
+    /* Tag selector styles */
+    .tutor-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.25rem 0.625rem;
+        background: rgba(129, 169, 164, 0.15);
+        border: 1px solid rgba(129, 169, 164, 0.3);
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        color: #d1d5db;
+        animation: tagIn 0.2s ease-out;
+    }
+    .tutor-tag .remove-tag {
+        cursor: pointer;
+        color: #9ca3af;
+        transition: color 0.15s;
+        display: flex;
+        align-items: center;
+    }
+    .tutor-tag .remove-tag:hover {
+        color: #f87171;
+    }
+    @keyframes tagIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .tutor-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
         margin-top: 0.25rem;
+        background: rgba(20, 45, 43, 0.98);
+        border: 1px solid rgba(129, 169, 164, 0.25);
+        border-radius: 0.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 50;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+    .tutor-dropdown-item {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8125rem;
+        color: #d1d5db;
+        cursor: pointer;
+        transition: background 0.15s;
+    }
+    .tutor-dropdown-item:hover {
+        background: rgba(129, 169, 164, 0.12);
+        color: #ffffff;
+    }
+    .tutor-dropdown-empty {
+        padding: 0.75rem;
+        font-size: 0.8125rem;
+        color: #6b7280;
+        text-align: center;
     }
 </style>
 {% endblock %}
@@ -45,7 +101,7 @@
     </div>
 
     <div class="glass-card rounded-xl p-6 sm:p-8">
-        <form method="post" action="" class="space-y-6">
+        <form method="post" action="" class="space-y-6" id="grupoForm">
             {% csrf_token %}
 
             {% if form.non_field_errors %}
@@ -74,26 +130,77 @@
                     {% if form.dia.errors %}<div class="text-xs text-red-400 mt-1">{{ form.dia.errors.0 }}</div>{% endif %}
                 </div>
                 <div>
-                    <label class="form-label" for="{{ form.horario.id_for_label }}">Horario</label>
-                    {{ form.horario }}
+                    <label class="form-label">Horario</label>
+                    <div class="flex items-center gap-2">
+                        <div class="relative flex-1">
+                            <div id="hora-display" class="form-input text-center cursor-pointer select-none" style="padding: 0.75rem 0.5rem;">00</div>
+                            <div id="hora-dropdown" class="absolute left-0 right-0 mt-1 bg-[#142d2b] border border-hut-300/20 rounded-lg max-h-[160px] overflow-y-auto hidden z-50 shadow-xl"></div>
+                        </div>
+                        <span class="text-gray-400 font-bold">:</span>
+                        <div class="relative flex-1">
+                            <div id="minuto-display" class="form-input text-center cursor-pointer select-none" style="padding: 0.75rem 0.5rem;">00</div>
+                            <div id="minuto-dropdown" class="absolute left-0 right-0 mt-1 bg-[#142d2b] border border-hut-300/20 rounded-lg max-h-[160px] overflow-y-auto hidden z-50 shadow-xl"></div>
+                        </div>
+                    </div>
+                    <div class="hidden">
+                        {{ form.horario }}
+                    </div>
                     {% if form.horario.errors %}<div class="text-xs text-red-400 mt-1">{{ form.horario.errors.0 }}</div>{% endif %}
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                    <label class="form-label" for="{{ form.tutor.id_for_label }}">Tutor</label>
-                    {{ form.tutor }}
-                    {% if form.tutor.errors %}<div class="text-xs text-red-400 mt-1">{{ form.tutor.errors.0 }}</div>{% endif %}
+                    <label class="form-label" for="{{ form.pais.id_for_label }}">País</label>
+                    {{ form.pais }}
+                    {% if form.pais.errors %}<div class="text-xs text-red-400 mt-1">{{ form.pais.errors.0 }}</div>{% endif %}
                 </div>
+                <div>
+                    <label class="form-label" for="{{ form.provincia.id_for_label }}">Provincia/Estado</label>
+                    {{ form.provincia }}
+                    <p id="provincia-loading" class="text-hut-300 text-xs mt-1 hidden">
+                        <svg class="inline w-3 h-3 animate-spin mr-1" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        Cargando...
+                    </p>
+                    {% if form.provincia.errors %}<div class="text-xs text-red-400 mt-1">{{ form.provincia.errors.0 }}</div>{% endif %}
+                </div>
+                <!-- label de gmt sin input-->
+                <div>
+                    <label class="form-label">GMT</label>
+                    <span id="gmt-display" class="text-gray-500 font-medium">{% if form.instance.provincia and form.instance.provincia.gmt %}{{ form.instance.provincia.gmt }}{% else %}—{% endif %}</span>
+                </div>
+            </div>
+
+            <!-- Tutores tag selector -->
+            <div>
+                <label class="form-label">Tutores</label>
+                <!-- Tags area -->
+                <div id="tutorTagsContainer" class="flex flex-wrap gap-2 mb-2 min-h-[2rem]"></div>
+                <!-- Search + Dropdown -->
+                <div class="relative">
+                    <div class="relative">
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" id="tutorSearchInput" placeholder="Buscar tutor para agregar..." autocomplete="off"
+                               class="form-input pl-10" style="padding-left: 2.5rem;">
+                    </div>
+                    <div id="tutorDropdown" class="tutor-dropdown" style="display:none;"></div>
+                </div>
+                {% if form.tutores.errors %}<div class="text-xs text-red-400 mt-1">{{ form.tutores.errors.0 }}</div>{% endif %}
+                <!-- Hidden select managed by JS -->
+                {{ form.tutores }}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                     <label class="form-label" for="{{ form.url_whatsapp.id_for_label }}">URL WhatsApp</label>
                     {{ form.url_whatsapp }}
                     {% if form.url_whatsapp.errors %}<div class="text-xs text-red-400 mt-1">{{ form.url_whatsapp.errors.0 }}</div>{% endif %}
                 </div>
-            </div>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                     <label class="form-label" for="{{ form.capacidad.id_for_label }}">Capacidad (Participantes)</label>
                     {{ form.capacidad }}
@@ -110,4 +217,263 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const allTutores = {{ all_tutores_json|safe }};
+    const selectedIds = new Set({{ selected_tutores_json|safe }});
+
+    const tagsContainer = document.getElementById('tutorTagsContainer');
+    const searchInput = document.getElementById('tutorSearchInput');
+    const dropdown = document.getElementById('tutorDropdown');
+    const hiddenSelect = document.getElementById('id_tutores');
+
+    function syncHiddenSelect() {
+        // Clear all options selected state
+        for (const opt of hiddenSelect.options) {
+            opt.selected = selectedIds.has(parseInt(opt.value));
+        }
+    }
+
+    function renderTags() {
+        tagsContainer.innerHTML = '';
+        selectedIds.forEach(id => {
+            const tutor = allTutores.find(t => t.id === id);
+            if (!tutor) return;
+
+            const tag = document.createElement('span');
+            tag.className = 'tutor-tag';
+            tag.innerHTML = `
+                <svg class="w-3.5 h-3.5 text-hut-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                ${tutor.nombre}
+                <span class="remove-tag" data-id="${id}" title="Quitar">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </span>
+            `;
+            tagsContainer.appendChild(tag);
+        });
+
+        // Attach remove handlers
+        tagsContainer.querySelectorAll('.remove-tag').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const id = parseInt(this.dataset.id);
+                selectedIds.delete(id);
+                syncHiddenSelect();
+                renderTags();
+                renderDropdown(searchInput.value);
+            });
+        });
+    }
+
+    function renderDropdown(filter) {
+        const q = (filter || '').toLowerCase().trim();
+        const available = allTutores.filter(t => !selectedIds.has(t.id));
+        const filtered = q
+            ? available.filter(t => t.nombre.toLowerCase().includes(q))
+            : available;
+
+        if (filtered.length === 0) {
+            if (q && available.length > 0) {
+                dropdown.innerHTML = '<div class="tutor-dropdown-empty">Sin resultados para "' + q + '"</div>';
+            } else if (available.length === 0) {
+                dropdown.innerHTML = '<div class="tutor-dropdown-empty">Todos los tutores ya fueron asignados</div>';
+            } else {
+                dropdown.innerHTML = '';
+            }
+        } else {
+            dropdown.innerHTML = filtered.map(t =>
+                `<div class="tutor-dropdown-item" data-id="${t.id}">${t.nombre}</div>`
+            ).join('');
+        }
+
+        dropdown.style.display = (dropdown.innerHTML) ? 'block' : 'none';
+
+        // Attach click handlers
+        dropdown.querySelectorAll('.tutor-dropdown-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const id = parseInt(this.dataset.id);
+                selectedIds.add(id);
+                syncHiddenSelect();
+                renderTags();
+                searchInput.value = '';
+                renderDropdown('');
+                dropdown.style.display = 'none';
+                searchInput.focus();
+            });
+        });
+    }
+
+    // Events
+    searchInput.addEventListener('focus', function() {
+        renderDropdown(this.value);
+    });
+
+    searchInput.addEventListener('input', function() {
+        renderDropdown(this.value);
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Initialize
+    syncHiddenSelect();
+    renderTags();
+
+    // Province AJAX logic
+    const paisSelect = document.getElementById('id_pais');
+    const provinciaSelect = document.getElementById('id_provincia');
+    const loadingText = document.getElementById('provincia-loading');
+    const gmtDisplay = document.getElementById('gmt-display');
+
+    if (paisSelect) {
+        paisSelect.addEventListener('change', function() {
+            const paisId = this.value;
+            provinciaSelect.innerHTML = '<option value="">Seleccione una Provincia/Estado</option>';
+            if (gmtDisplay) gmtDisplay.textContent = '—';
+            if (!paisId) return;
+            loadingText.classList.remove('hidden');
+            fetch(`/api/provincias/${paisId}/`)
+                .then(r => r.json())
+                .then(data => {
+                    loadingText.classList.add('hidden');
+                    data.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = p.nombre;
+                        if (p.gmt) {
+                            opt.dataset.gmt = p.gmt;
+                        }
+                        provinciaSelect.appendChild(opt);
+                    });
+                })
+                .catch(() => loadingText.classList.add('hidden'));
+        });
+    }
+
+    if (provinciaSelect && gmtDisplay) {
+        provinciaSelect.addEventListener('change', function() {
+            const selectedOpt = this.options[this.selectedIndex];
+            gmtDisplay.textContent = selectedOpt.dataset.gmt || '—';
+        });
+        
+        // Populate initial GMT datasets if they already exist
+        {% if form.instance.pais %}
+            fetch(`/api/provincias/{{ form.instance.pais.id }}/`)
+                .then(r => r.json())
+                .then(data => {
+                    Array.from(provinciaSelect.options).forEach(opt => {
+                        const province = data.find(p => p.id == opt.value);
+                        if (province && province.gmt) {
+                            opt.dataset.gmt = province.gmt;
+                        }
+                    });
+                });
+        {% endif %}
+    }
+
+    // Horario Logic (Custom dropdowns)
+    const horaDisplay = document.getElementById('hora-display');
+    const horaDropdown = document.getElementById('hora-dropdown');
+    const minutoDisplay = document.getElementById('minuto-display');
+    const minutoDropdown = document.getElementById('minuto-dropdown');
+    const horarioInput = document.getElementById('id_horario');
+
+    if (horaDisplay && minutoDisplay && horarioInput) {
+        let currentHora = '00';
+        let currentMinuto = '00';
+
+        function updateHorario() {
+            horaDisplay.textContent = currentHora;
+            minutoDisplay.textContent = currentMinuto;
+            horarioInput.value = `${currentHora}:${currentMinuto} hs`;
+        }
+
+        // Populate hours
+        let horaHTML = '';
+        for (let i = 0; i < 24; i++) {
+            const val = i.toString().padStart(2, '0');
+            horaHTML += `<div class="p-2 text-center text-sm hover:bg-hut-300/20 cursor-pointer transition-colors text-gray-200" data-val="${val}">${val}</div>`;
+        }
+        horaDropdown.innerHTML = horaHTML;
+        
+        // Populate minutes (every 5 minutes to keep it clean)
+        let minutoHTML = '';
+        for (let i = 0; i < 60; i += 5) {
+            const val = i.toString().padStart(2, '0');
+            minutoHTML += `<div class="p-2 text-center text-sm hover:bg-hut-300/20 cursor-pointer transition-colors text-gray-200" data-val="${val}">${val}</div>`;
+        }
+        minutoDropdown.innerHTML = minutoHTML;
+
+        // Set initial values from the hidden input
+        let currentHorario = horarioInput.value;
+        if (currentHorario) {
+            const match = currentHorario.match(/(\d{2}):(\d{2})/);
+            if (match) {
+                currentHora = match[1];
+                currentMinuto = match[2];
+                
+                // Add the exact minute option if it's not a multiple of 5
+                const mOpts = Array.from(minutoDropdown.children).map(el => el.dataset.val);
+                if (!mOpts.includes(currentMinuto)) {
+                    mOpts.push(currentMinuto);
+                    mOpts.sort((a, b) => a.localeCompare(b));
+                    minutoDropdown.innerHTML = mOpts.map(val => `<div class="p-2 text-center text-sm hover:bg-hut-300/20 cursor-pointer transition-colors text-gray-200" data-val="${val}">${val}</div>`).join('');
+                }
+            }
+        }
+
+        updateHorario();
+
+        // Events
+        horaDisplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            horaDropdown.classList.toggle('hidden');
+            minutoDropdown.classList.add('hidden');
+            // scroll to selected item if possible
+            const selected = horaDropdown.querySelector(`[data-val="${currentHora}"]`);
+            if(selected) selected.scrollIntoView({block: "center"});
+        });
+        
+        minutoDisplay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            minutoDropdown.classList.toggle('hidden');
+            horaDropdown.classList.add('hidden');
+            // scroll to selected item if possible
+            const selected = minutoDropdown.querySelector(`[data-val="${currentMinuto}"]`);
+            if(selected) selected.scrollIntoView({block: "center"});
+        });
+
+        horaDropdown.addEventListener('click', (e) => {
+            if(e.target.dataset.val) {
+                currentHora = e.target.dataset.val;
+                updateHorario();
+                horaDropdown.classList.add('hidden');
+            }
+        });
+
+        minutoDropdown.addEventListener('click', (e) => {
+            if(e.target.dataset.val) {
+                currentMinuto = e.target.dataset.val;
+                updateHorario();
+                minutoDropdown.classList.add('hidden');
+            }
+        });
+
+        document.addEventListener('click', () => {
+            horaDropdown.classList.add('hidden');
+            minutoDropdown.classList.add('hidden');
+        });
+    }
+})();
+</script>
 {% endblock %}

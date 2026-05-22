@@ -28,6 +28,12 @@ urlpatterns = [
     path('grupos/editar/<int:pk>/', views.GruposMoodleUpdateView.as_view(), name='grupos_editar'),
     path('grupos/eliminar/<int:pk>/', views.GruposMoodleDeleteView.as_view(), name='grupos_eliminar'),
 
+    # Tutores (Admin)
+    path('tutores/', views.TutorListView.as_view(), name='tutores_lista'),
+    path('tutores/nuevo/', views.TutorCreateView.as_view(), name='tutores_crear'),
+    path('tutores/editar/<int:pk>/', views.TutorUpdateView.as_view(), name='tutores_editar'),
+    path('tutores/eliminar/<int:pk>/', views.TutorDeleteView.as_view(), name='tutores_eliminar'),
+
     # Elección de Grupo Moodle (Público)
     path('mi-grupo/', views.inscripto_login_view, name='inscripto_login'),
     path('mi-grupo/seleccionar/', views.inscripto_seleccion_grupo_view, name='inscripto_seleccionar_grupo'),

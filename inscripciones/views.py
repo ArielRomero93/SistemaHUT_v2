@@ -9,8 +9,8 @@ from django.db.models import Q
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle
-from .forms import InscripcionForm, GruposMoodleForm, CursoHUTForm, InscriptoLoginForm, SeleccionGrupoForm, VoluntarioForm
+from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Tutor
+from .forms import InscripcionForm, GruposMoodleForm, CursoHUTForm, InscriptoLoginForm, SeleccionGrupoForm, VoluntarioForm, TutorForm
 from .envio_mail import enviar_confirmacion_inscripcion
 
 
@@ -113,7 +113,7 @@ def inscripciones_cerradas(request):
 def get_provincias(request, pais_id):
     """API JSON: devuelve provincias filtradas por país (para AJAX)."""
     provincias = ProvinciaEstado.objects.filter(idPais_id=pais_id).order_by('provinciaNombre')
-    data = [{'id': p.id, 'nombre': p.provinciaNombre} for p in provincias]
+    data = [{'id': p.id, 'nombre': p.provinciaNombre, 'gmt': p.gmt} for p in provincias]
     return JsonResponse(data, safe=False)
 
 
@@ -380,15 +380,16 @@ class GruposMoodleListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('curso')
+        queryset = super().get_queryset().select_related('curso').prefetch_related('tutores')
         q = self.request.GET.get('q')
         curso_id = self.request.GET.get('curso')
         if q:
             queryset = queryset.filter(
                 Q(nombre__icontains=q) |
-                Q(tutor__icontains=q) |
+                Q(tutores__nombre__icontains=q) |
+                Q(tutores__apellido__icontains=q) |
                 Q(dia__icontains=q)
-            )
+            ).distinct()
         if curso_id:
             queryset = queryset.filter(curso_id=curso_id)
         return queryset
@@ -410,6 +411,16 @@ class GruposMoodleCreateView(LoginRequiredMixin, CreateView):
     template_name = 'inscripciones/gruposmoodle_form.html'
     success_url = reverse_lazy('grupos_lista')
 
+    def get_context_data(self, **kwargs):
+        import json
+        context = super().get_context_data(**kwargs)
+        tutores_activos = Tutor.objects.filter(activo=True).order_by('apellido', 'nombre')
+        context['all_tutores_json'] = json.dumps(
+            [{'id': t.id, 'nombre': f'{t.nombre} {t.apellido}'} for t in tutores_activos]
+        )
+        context['selected_tutores_json'] = '[]'
+        return context
+
     def form_valid(self, form):
         messages.success(self.request, 'Grupo creado correctamente.')
         return super().form_valid(form)
@@ -419,6 +430,17 @@ class GruposMoodleUpdateView(LoginRequiredMixin, UpdateView):
     form_class = GruposMoodleForm
     template_name = 'inscripciones/gruposmoodle_form.html'
     success_url = reverse_lazy('grupos_lista')
+
+    def get_context_data(self, **kwargs):
+        import json
+        context = super().get_context_data(**kwargs)
+        tutores_activos = Tutor.objects.filter(activo=True).order_by('apellido', 'nombre')
+        context['all_tutores_json'] = json.dumps(
+            [{'id': t.id, 'nombre': f'{t.nombre} {t.apellido}'} for t in tutores_activos]
+        )
+        selected = list(self.object.tutores.values_list('id', flat=True))
+        context['selected_tutores_json'] = json.dumps(selected)
+        return context
 
     def form_valid(self, form):
         messages.success(self.request, 'Grupo actualizado correctamente.')
@@ -431,6 +453,67 @@ class GruposMoodleDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, 'Grupo eliminado correctamente.')
+        return super().delete(request, *args, **kwargs)
+
+# ==============================================================================
+# TUTORES CRUD
+# ==============================================================================
+
+class TutorListView(LoginRequiredMixin, ListView):
+    model = Tutor
+    template_name = 'inscripciones/tutor_list.html'
+    context_object_name = 'tutores'
+    paginate_by = 15
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        q = self.request.GET.get('q')
+        estado = self.request.GET.get('estado')
+        if q:
+            queryset = queryset.filter(
+                Q(nombre__icontains=q) |
+                Q(apellido__icontains=q) |
+                Q(email__icontains=q)
+            )
+        if estado == 'activos':
+            queryset = queryset.filter(activo=True)
+        elif estado == 'inactivos':
+            queryset = queryset.filter(activo=False)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['query'] = self.request.GET.get('q', '')
+        context['estado_filtro'] = self.request.GET.get('estado', '')
+        return context
+
+class TutorCreateView(LoginRequiredMixin, CreateView):
+    model = Tutor
+    form_class = TutorForm
+    template_name = 'inscripciones/tutor_form.html'
+    success_url = reverse_lazy('tutores_lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Tutor creado correctamente.')
+        return super().form_valid(form)
+
+class TutorUpdateView(LoginRequiredMixin, UpdateView):
+    model = Tutor
+    form_class = TutorForm
+    template_name = 'inscripciones/tutor_form.html'
+    success_url = reverse_lazy('tutores_lista')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Tutor actualizado correctamente.')
+        return super().form_valid(form)
+
+class TutorDeleteView(LoginRequiredMixin, DeleteView):
+    model = Tutor
+    template_name = 'inscripciones/tutor_confirm_delete.html'
+    success_url = reverse_lazy('tutores_lista')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, 'Tutor eliminado correctamente.')
         return super().delete(request, *args, **kwargs)
 
 # ==============================================================================

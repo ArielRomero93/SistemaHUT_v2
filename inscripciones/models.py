@@ -87,6 +87,7 @@ class Pais(models.Model):
 class ProvinciaEstado(models.Model):
     idPais = models.ForeignKey(Pais, on_delete=models.CASCADE)
     provinciaNombre = models.CharField(max_length=100)
+    gmt = models.CharField(max_length=10, blank=True, null=True, help_text="Ej: UTC-3")
 
     class Meta:
         verbose_name = 'Provincia/Estado'
@@ -125,6 +126,23 @@ def get_curso_activo():
     curso = CursoHUT.objects.filter(activo=True).first()
     return curso.pk if curso else None
 
+class Tutor(models.Model):
+    nombre = models.CharField(max_length=100, verbose_name='Nombre')
+    apellido = models.CharField(max_length=100, verbose_name='Apellido')
+    email = models.EmailField(blank=True, null=True, verbose_name='Correo Electrónico')
+    telefono = models.CharField(max_length=20, blank=True, null=True, verbose_name='Teléfono')
+    activo = models.BooleanField(default=True, verbose_name='Activo')
+    fecha_creacion = models.DateTimeField(default=timezone.now, editable=False)
+
+    def __str__(self):
+        return f"{self.nombre} {self.apellido}"
+
+    class Meta:
+        verbose_name = 'Tutor'
+        verbose_name_plural = 'Tutores'
+        ordering = ['apellido', 'nombre']
+
+
 class GruposMoodle(models.Model):
     DIAS_SEMANA = [
         ('Lunes', 'Lunes'),
@@ -139,7 +157,9 @@ class GruposMoodle(models.Model):
     curso = models.ForeignKey(CursoHUT, on_delete=models.PROTECT, verbose_name='Curso HUT')
     horario = models.CharField(max_length=100, verbose_name='Horario')
     dia = models.CharField(max_length=15, choices=DIAS_SEMANA, verbose_name='Día')
-    tutor = models.CharField(max_length=100, verbose_name='Tutor')
+    pais = models.ForeignKey(Pais, on_delete=models.PROTECT, verbose_name='País', null=True, blank=True)
+    provincia = models.ForeignKey(ProvinciaEstado, on_delete=models.PROTECT, verbose_name='Provincia/Estado', null=True, blank=True)
+    tutores = models.ManyToManyField(Tutor, blank=True, verbose_name='Tutores')
     url_whatsapp = models.URLField(max_length=200, blank=True, null=True, verbose_name='URL WhatsApp')
     capacidad = models.IntegerField(default=8, verbose_name='Capacidad')
     participantes = models.IntegerField(default=0, verbose_name='Participantes')

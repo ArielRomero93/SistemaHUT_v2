@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Usuario, OpcionesMenu, Pais, ProvinciaEstado,
     FormularioInscripcionHUT, FormularioDeDecision,
-    AreaInteres, Voluntario
+    AreaInteres, Voluntario, Tutor
 )
 
 
@@ -57,3 +57,11 @@ class VoluntarioAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'apellido', 'email', 'pais_origen', 'hizo_hut')
     search_fields = ('nombre', 'apellido', 'email')
     list_filter = ('hizo_hut', 'deseo_salir_campo', 'nivel_estudio')
+
+
+@admin.register(Tutor)
+class TutorAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'apellido', 'email', 'telefono', 'activo')
+    search_fields = ('nombre', 'apellido', 'email')
+    list_filter = ('activo',)
+
