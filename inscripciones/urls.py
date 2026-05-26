@@ -42,6 +42,8 @@ urlpatterns = [
     # Voluntarios (Público)
     path('aspirantes/', views.formulario_voluntario_crear, name='formulario_voluntario_crear'),
     path('aspirantes/gracias/', views.formulario_voluntario_gracias, name='formulario_voluntario_gracias'),
+    path('voluntarios/', views.voluntario_lista, name='voluntario_lista'),
+    path('voluntarios/exportar/', views.export_voluntario_excel, name='voluntario_exportar'),
 
     # Importación de Alumnos (Admin)
     path('cambio-estado-alumno/', views.cambio_estado_alumno_view, name='cambio_estado_alumno'),

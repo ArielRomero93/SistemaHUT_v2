@@ -5,11 +5,11 @@ from django.contrib import messages
 from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Count, Max
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Tutor
+from .models import FormularioInscripcionHUT, Pais, ProvinciaEstado, CursoHUT, GruposMoodle, Tutor, Voluntario
 from .forms import InscripcionForm, GruposMoodleForm, CursoHUTForm, InscriptoLoginForm, SeleccionGrupoForm, VoluntarioForm, TutorForm
 from .envio_mail import enviar_confirmacion_inscripcion
 
@@ -609,6 +609,86 @@ def formulario_voluntario_crear(request):
 def formulario_voluntario_gracias(request):
     """Página de agradecimiento post-inscripción de voluntarios."""
     return render(request, 'publico/gracias_voluntario.html')
+
+@login_required
+def voluntario_lista(request):
+    """Página pública que muestra la lista de voluntarios y candidatos registrados.
+    Permite filtrar por rol y buscar por nombre o apellido.
+    """
+    role = request.GET.get('rol')
+    query = request.GET.get('q', '').strip()
+    qs = Voluntario.objects.all()
+    if role and role != 'all':
+        qs = qs.filter(rol_agencia=role)
+    if query:
+        qs = qs.filter(
+            Q(nombre__icontains=query) |
+            Q(apellido__icontains=query)
+        )
+    voluntarios = qs.order_by('apellido', 'nombre')
+    context = {
+        'voluntarios': voluntarios,
+        'selected_role': role or 'all',
+        'search_query': query,
+    }
+    return render(request, 'inscripciones/voluntario_lista.html', context)
+
+@login_required
+def export_voluntario_excel(request):
+    """Export all volunteer data to Excel.
+    Areas de interés are placed in separate columns, each three columns apart.
+    """
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from django.db.models import Count, Max
+    from django.http import HttpResponse
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Voluntarios"
+
+    # Header style
+    header_font = Font(bold=True, color='FFFFFF')
+    header_fill = PatternFill(start_color='3D6B67', end_color='3D6B67', fill_type='solid')
+    header_align = Alignment(horizontal='center')
+
+    # Base fields
+    base_fields = ['ID', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Localidad', 'Provincia', 'Rol']
+    # Determine max number of áreas de interés for any volunteer
+    max_areas = Voluntario.objects.annotate(cnt=Count('areas_interes')).aggregate(max_cnt=Max('cnt'))['max_cnt'] or 0
+    # Build headers: one column per area
+    headers = base_fields[:]
+    for i in range(max_areas):
+        headers.append(f'Área {i+1}')
+    # Write headers
+    for col_idx, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_idx, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_align
+
+    # Populate rows
+    for row_idx, v in enumerate(Voluntario.objects.all().prefetch_related('areas_interes'), start=2):
+        ws.cell(row=row_idx, column=1, value=v.id)
+        ws.cell(row=row_idx, column=2, value=v.nombre)
+        ws.cell(row=row_idx, column=3, value=v.apellido)
+        ws.cell(row=row_idx, column=4, value=v.email)
+        ws.cell(row=row_idx, column=5, value=v.telefono)
+        ws.cell(row=row_idx, column=6, value=v.localidad)
+        ws.cell(row=row_idx, column=7, value=v.provincia_residencia)
+        ws.cell(row=row_idx, column=8, value=v.get_rol_agencia_display())
+        # Fill area columns
+        for idx, area in enumerate(v.areas_interes.all()):
+            ws.cell(row=row_idx, column=9 + idx, value=area.nombre)
+
+    # Auto-width columns
+    for col in ws.columns:
+        max_len = max(len(str(cell.value or '')) for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = max_len + 4
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="voluntarios y candidatos.xlsx"'
+    wb.save(response)
+    return response
 
 # ==============================================================================
 # IMPORTACIÓN DE ALUMNOS (ADMIN)

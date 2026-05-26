@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Voluntarios y Candidatos{% endblock %}
+
+{% block content %}
+<div class="flex flex-col min-h-screen bg-transparent">
+  <!-- Header with filters -->
+  <div class="bg-hut-800/30 glass-card p-4 mb-4 flex flex-col md:flex-row md:items-center md:justify-between">
+    <h1 class="text-2xl font-bold text-hut-200 mb-2 md:mb-0">Voluntarios y Candidatos Registrados</h1>
+    <div class="flex items-center space-x-2">
+      <form method="get" class="flex items-center space-x-2">
+        <select name="rol" class="w-40 bg-hut-300/5 border border-hut-300/20 rounded-lg px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-hut-400" onchange="this.form.submit()">
+          <option value="all" {% if selected_role == 'all' %}selected{% endif %}>Todos</option>
+          <option value="VOLUNTARIO" {% if selected_role == 'VOLUNTARIO' %}selected{% endif %}>Voluntario</option>
+          <option value="CANDIDATO" {% if selected_role == 'CANDIDATO' %}selected{% endif %}>Candidato</option>
+          <option value="INTERESADO" {% if selected_role == 'INTERESADO' %}selected{% endif %}>Interesado</option>
+        </select>
+        <input type="text" name="q" placeholder="Buscar…" value="{{ search_query }}" class="bg-hut-300/5 border border-hut-300/20 rounded-lg px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-hut-400" />
+        <button type="submit" class="px-3 py-1 bg-hut-400/30 hover:bg-hut-400/50 rounded-lg text-sm text-hut-200 transition-colors">Buscar</button>
+      </form>
+      <a href="{% url 'formulario_voluntario_crear' %}" class="px-4 py-2 bg-hut-500/30 hover:bg-hut-500/50 rounded-lg text-sm text-hut-100 transition-colors flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Nuevo Voluntario
+      </a>
+      <a href="{% url 'voluntario_exportar' %}" class="px-4 py-2 bg-hut-600/30 hover:bg-hut-600/50 rounded-lg text-sm text-hut-100 transition-colors flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        Exportar a Excel
+      </a>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-auto">
+    <div class="glass-card p-4 mx-2 md:mx-0">
+      <table class="min-w-full table-auto">
+        <thead class="bg-hut-800/20">
+          <tr class="text-left text-hut-300">
+            <th class="px-4 py-2">Nombre</th>
+            <th class="px-4 py-2">Apellido</th>
+            <th class="px-4 py-2">Rol</th>
+            <th class="px-4 py-2">Email</th>
+            <th class="px-4 py-2">Teléfono</th>
+            <th class="px-4 py-2">Localidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in voluntarios %}
+          <tr class="table-row-hover text-hut-100">
+            <td class="px-4 py-2">{{ v.nombre }}</td>
+            <td class="px-4 py-2">{{ v.apellido }}</td>
+            <td class="px-4 py-2">{{ v.get_rol_agencia_display }}</td>
+            <td class="px-4 py-2"><a href="mailto:{{ v.email }}" class="underline hover:text-hut-300">{{ v.email }}</a></td>
+            <td class="px-4 py-2">{{ v.telefono }}</td>
+            <td class="px-4 py-2">{{ v.localidad }}, {{ v.provincia_residencia }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6" class="px-4 py-2 text-center text-hut-400">No hay voluntarios o candidatos registrados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
