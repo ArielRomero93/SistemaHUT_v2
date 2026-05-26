@@ -651,14 +651,33 @@ def export_voluntario_excel(request):
     header_fill = PatternFill(start_color='3D6B67', end_color='3D6B67', fill_type='solid')
     header_align = Alignment(horizontal='center')
 
-    # Base fields
-    base_fields = ['ID', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Localidad', 'Provincia', 'Rol']
+    # All base fields matching the Voluntario model
+    base_fields = [
+        'Nombre', 'Apellido', 'Email', 'Teléfono',
+        'Fecha de Nacimiento',
+        'País de Origen', 'País de Residencia', 'Provincia', 'Localidad', 'Barrio',
+        'Hijos', 'Fechas Nacimiento Hijos', 'Con Quién Convive',
+        'Nombre Pastor', 'Teléfono Pastor',
+        'Rol',
+        'Miembro de Iglesia', 'Cuál Iglesia',
+        'Sirve en Iglesia', 'Cuál Servicio',
+        'Tiempo Asistiendo',
+        'Voluntario Otra Org', 'Cuál Org',
+        'Hizo HUT', 'Año HUT',
+        'Hizo Reacciona', 'Cuándo Reacciona',
+        'Deseo Salir al Campo',
+        'Nivel de Estudio', 'Título Universitario',
+        'Cursos/Formación', 'Experiencia Profesional',
+        'Habla Idioma', 'Cuál Idioma',
+        'Lee/Escribe Idioma', 'Cuál Idioma Lee/Escribe',
+        'Otras Propuestas',
+    ]
     # Determine max number of áreas de interés for any volunteer
     max_areas = Voluntario.objects.annotate(cnt=Count('areas_interes')).aggregate(max_cnt=Max('cnt'))['max_cnt'] or 0
     # Build headers: one column per area
     headers = base_fields[:]
     for i in range(max_areas):
-        headers.append(f'Área {i+1}')
+        headers.append(f'Área de Interés {i+1}')
     # Write headers
     for col_idx, header in enumerate(headers, 1):
         cell = ws.cell(row=1, column=col_idx, value=header)
@@ -667,18 +686,49 @@ def export_voluntario_excel(request):
         cell.alignment = header_align
 
     # Populate rows
+    area_start_col = len(base_fields) + 1
     for row_idx, v in enumerate(Voluntario.objects.all().prefetch_related('areas_interes'), start=2):
-        ws.cell(row=row_idx, column=1, value=v.id)
-        ws.cell(row=row_idx, column=2, value=v.nombre)
-        ws.cell(row=row_idx, column=3, value=v.apellido)
-        ws.cell(row=row_idx, column=4, value=v.email)
-        ws.cell(row=row_idx, column=5, value=v.telefono)
-        ws.cell(row=row_idx, column=6, value=v.localidad)
-        ws.cell(row=row_idx, column=7, value=v.provincia_residencia)
-        ws.cell(row=row_idx, column=8, value=v.get_rol_agencia_display())
+        col = 1
+        ws.cell(row=row_idx, column=col, value=v.nombre); col += 1
+        ws.cell(row=row_idx, column=col, value=v.apellido); col += 1
+        ws.cell(row=row_idx, column=col, value=v.email); col += 1
+        ws.cell(row=row_idx, column=col, value=v.telefono); col += 1
+        ws.cell(row=row_idx, column=col, value=v.fecha_nacimiento.strftime('%d/%m/%Y') if v.fecha_nacimiento else ''); col += 1
+        ws.cell(row=row_idx, column=col, value=v.pais_origen); col += 1
+        ws.cell(row=row_idx, column=col, value=v.pais_residencia); col += 1
+        ws.cell(row=row_idx, column=col, value=v.provincia_residencia); col += 1
+        ws.cell(row=row_idx, column=col, value=v.localidad); col += 1
+        ws.cell(row=row_idx, column=col, value=v.barrio); col += 1
+        ws.cell(row=row_idx, column=col, value=v.hijos); col += 1
+        ws.cell(row=row_idx, column=col, value=v.fechas_nacimiento_hijos); col += 1
+        ws.cell(row=row_idx, column=col, value=v.con_quien_convive); col += 1
+        ws.cell(row=row_idx, column=col, value=v.nombre_pastor); col += 1
+        ws.cell(row=row_idx, column=col, value=v.telefono_pastor); col += 1
+        ws.cell(row=row_idx, column=col, value=v.get_rol_agencia_display()); col += 1
+        ws.cell(row=row_idx, column=col, value=v.miembro_iglesia); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cual_iglesia); col += 1
+        ws.cell(row=row_idx, column=col, value=v.sirve_en_iglesia); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cual_servicio); col += 1
+        ws.cell(row=row_idx, column=col, value=v.tiempo_asistiendo); col += 1
+        ws.cell(row=row_idx, column=col, value=v.voluntario_otra_org); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cual_org); col += 1
+        ws.cell(row=row_idx, column=col, value=v.hizo_hut); col += 1
+        ws.cell(row=row_idx, column=col, value=v.hizo_hut_anio); col += 1
+        ws.cell(row=row_idx, column=col, value=v.hizo_reacciona); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cuando_reacciona); col += 1
+        ws.cell(row=row_idx, column=col, value=v.deseo_salir_campo); col += 1
+        ws.cell(row=row_idx, column=col, value=v.get_nivel_estudio_display() if v.nivel_estudio else ''); col += 1
+        ws.cell(row=row_idx, column=col, value=v.titulo_universitario); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cursos_formacion); col += 1
+        ws.cell(row=row_idx, column=col, value=v.experiencia_profesional); col += 1
+        ws.cell(row=row_idx, column=col, value=v.habla_idioma); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cual_idioma); col += 1
+        ws.cell(row=row_idx, column=col, value=v.lee_escribe_idioma); col += 1
+        ws.cell(row=row_idx, column=col, value=v.cual_idioma_lee_escribe); col += 1
+        ws.cell(row=row_idx, column=col, value=v.otras_propuestas); col += 1
         # Fill area columns
         for idx, area in enumerate(v.areas_interes.all()):
-            ws.cell(row=row_idx, column=9 + idx, value=area.nombre)
+            ws.cell(row=row_idx, column=area_start_col + idx, value=area.nombre)
 
     # Auto-width columns
     for col in ws.columns:
