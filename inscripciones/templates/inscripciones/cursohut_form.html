@@ -40,6 +40,15 @@
                         <p class="mt-1 text-xs text-red-400">{{ form.anio.errors.0 }}</p>
                     {% endif %}
                 </div>
+                                
+                <div class="bg-hut-300/5 p-4 rounded-lg border border-hut-300/10">
+                    <label for="{{ form.password_curso.id_for_label }}" class="block text-sm font-medium text-gray-300 mb-2">{{ form.password_curso.label }}</label>
+                    {{ form.password_curso }}
+                    <p class="text-xs text-gray-400 mt-1">Contraseña de Moodle para inscripciones.</p>
+                    {% if form.password_curso.errors %}
+                        <p class="mt-1 text-xs text-red-400">{{ form.password_curso.errors.0 }}</p>
+                    {% endif %}
+                </div>
                 
                 <div class="flex items-center gap-3 mt-2 bg-hut-300/5 p-4 rounded-lg border border-hut-300/10">
                     {{ form.activo }}
@@ -62,6 +71,7 @@
                         <p class="mt-1 text-xs text-red-400">{{ form.inscripciones_abiertas.errors.0 }}</p>
                     {% endif %}
                 </div>
+
             </div>
 
             <div class="pt-6 border-t border-hut-300/10 flex justify-end gap-3">

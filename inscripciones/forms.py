@@ -193,7 +193,7 @@ class InscripcionForm(forms.ModelForm):
 class CursoHUTForm(forms.ModelForm):
     class Meta:
         model = CursoHUT
-        fields = ['nombre', 'anio', 'activo', 'inscripciones_abiertas']
+        fields = ['nombre', 'anio', 'activo', 'inscripciones_abiertas', 'password_curso']
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': ADMIN_INPUT_CLASS,
@@ -208,6 +208,10 @@ class CursoHUTForm(forms.ModelForm):
             }),
             'inscripciones_abiertas': forms.CheckboxInput(attrs={
                 'class': 'appearance-none w-5 h-5 rounded border border-hut-300/30 bg-hut-300/10 checked:bg-hut-500 checked:border-hut-500 focus:outline-none focus:ring-2 focus:ring-hut-400/50 cursor-pointer transition-all flex items-center justify-center checked:after:content-[\'✔\'] checked:after:text-white checked:after:text-xs',
+            }),
+            'password_curso': forms.TextInput(attrs={
+                'class': ADMIN_INPUT_CLASS,
+                'placeholder': 'Contraseña para inscripciones',
             }),
         }
 

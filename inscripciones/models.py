@@ -1,5 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
+from django.core.exceptions import ValidationError
+import os
+from django.db.models.signals import post_save, post_delete, pre_save
+from django.dispatch import receiver
 
 class AuditoriaModel(models.Model):
     usuario_auditoria = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Usuario Modificación")
@@ -8,11 +15,6 @@ class AuditoriaModel(models.Model):
     class Meta:
         abstract = True
 
-from django.core.validators import MaxValueValidator, MinValueValidator
-from django.utils import timezone
-from django.contrib.auth.hashers import make_password, check_password
-from django.core.exceptions import ValidationError
-import os
 
 
 # ======================
@@ -115,6 +117,7 @@ class CursoHUT(AuditoriaModel):
     anio = models.IntegerField(verbose_name='Año')
     activo = models.BooleanField(default=False, verbose_name='Habilitado')
     inscripciones_abiertas = models.BooleanField(default=False, verbose_name='Inscripciones Abiertas')
+    password_curso = models.CharField(max_length=100, blank=True, null=True, verbose_name='Contraseña Curso')
 
     def save(self, *args, **kwargs):
         if self.activo:
@@ -410,8 +413,7 @@ class TerminosCondiciones(AuditoriaModel):
         verbose_name_plural = 'Términos y Condiciones'
 
 
-from django.db.models.signals import post_save, post_delete, pre_save
-from django.dispatch import receiver
+
 
 def recalcular_participantes_grupo(grupo):
     if grupo:

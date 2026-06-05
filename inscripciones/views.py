@@ -120,10 +120,8 @@ def get_provincias(request, pais_id):
 
 @login_required
 def exportar_csv_moodle(request):
-    """Exporta inscripciones del curso activo como XLSX compatible con Moodle."""
-    import io
-    from openpyxl import Workbook
-    from openpyxl.styles import Font, PatternFill, Alignment
+    """Exporta inscripciones del curso activo como CSV (separado por ;) compatible con Moodle."""
+    import csv
 
     curso_activo = CursoHUT.objects.filter(activo=True).first()
     if not curso_activo:
@@ -138,51 +136,29 @@ def exportar_csv_moodle(request):
 
     curso_nombre = curso_activo.nombre.replace(' ', '')
     fecha = datetime.now().strftime('%Y%m%d')
+    nombre_archivo = f'MOODLE_{curso_nombre}_{fecha}.csv'
 
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Moodle'
-
-    # Estilos para el header
-    header_font = Font(bold=True, color='FFFFFF', size=11)
-    header_fill = PatternFill(start_color='3D6B67', end_color='3D6B67', fill_type='solid')
-    header_align = Alignment(horizontal='center')
-
-    headers = ['username', 'firstname', 'lastname', 'email', 'course1', 'role1', 'group1']
-    for col, header in enumerate(headers, 1):
-        cell = ws.cell(row=1, column=col, value=header)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = header_align
-
-    # Datos
-    for row, i in enumerate(inscripciones, 2):
-        grupo_nombre = i.grupo.nombre if i.grupo else ""
-        ws.cell(row=row, column=1, value=i.email)
-        ws.cell(row=row, column=2, value=i.nombre)
-        ws.cell(row=row, column=3, value=i.apellido)
-        ws.cell(row=row, column=4, value=i.email)
-        ws.cell(row=row, column=5, value=curso_nombre)
-        ws.cell(row=row, column=6, value='student')
-        ws.cell(row=row, column=7, value=grupo_nombre)
-
-    # Auto-ancho de columnas
-    for col in ws.columns:
-        max_len = max(len(str(cell.value or '')) for cell in col)
-        ws.column_dimensions[col[0].column_letter].width = max_len + 4
-
-    # Guardar en memoria
-    buffer = io.BytesIO()
-    wb.save(buffer)
-    buffer.seek(0)
-
-    nombre_archivo = f'MOODLE_{curso_nombre}_{fecha}.xlsx'
-
-    response = HttpResponse(
-        buffer.getvalue(),
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    )
+    response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
     response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+
+    writer = csv.writer(response, delimiter=';')
+    
+    headers = ['username', 'firstname', 'lastname', 'email', 'password', 'course1', 'role1', 'group1']
+    writer.writerow(headers)
+
+    for i in inscripciones:
+        grupo_nombre = f"{curso_activo.nombre}{curso_activo.anio}_{i.grupo.nombre}" if i.grupo else ""
+        writer.writerow([
+            i.email,
+            i.nombre,
+            i.apellido,
+            i.email,
+            curso_activo.password_curso,
+            'hut',
+            'student',
+            grupo_nombre
+        ])
+
     return response
 
 @login_required
